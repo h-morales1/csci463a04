@@ -36,14 +36,14 @@ uint16_t memory::get16(uint32_t addr) const {
   uint8_t msb = get8(addr + 1); // addr +1
   uint8_t lsb = get8(addr);     // just addr
 
-  return ((lsb << 8) | (msb));
+  return ((msb << 8) | (lsb));
 }
 
 uint32_t memory::get32(uint32_t addr) const {
   uint16_t msb = get16(addr + 2);
   uint16_t lsb = get16(addr);
 
-  return ((lsb << 8) | (msb));
+  return ((msb << 16) | (lsb));
 }
 
 int32_t memory::get8_sx(uint32_t addr) const {
@@ -87,6 +87,7 @@ void memory::set32(uint32_t addr, uint32_t val) {
   set16(addr + 2, msb);
 }
 
+/*
 void memory::dump() const {
   int count = 0;
   for (std::size_t i = 0; i < mem.size(); i++) {
@@ -109,6 +110,44 @@ void memory::dump() const {
     }
   }
   std::cout << std::endl;
+}
+*/
+
+void memory::print_mem_range(uint32_t start, uint32_t end) const {
+  int counter = 0;
+  for (; start < end; start++) {
+    std::cout << to_hex8(get8(start)) << " ";
+    counter++;
+    if ((counter % 8 == 0) && (start != 0)) {
+      std::cout << " ";
+    }
+  }
+}
+
+void memory::print_mem_ascii(uint32_t start, uint32_t end) const {
+  std::cout << '*';
+  for (; start < end; start++) {
+    uint8_t ch = get8(start);
+    ch = isprint(ch) ? ch : '.';
+    std::cout << ch;
+  }
+  std::cout << '*';
+}
+
+void memory::dump() const {
+  int count = 15;
+  for (std::size_t i = 0; i < mem.size(); i++) {
+    if (count == 15) {
+      std::cout << to_hex32(i) << ": ";
+      print_mem_range(i, i + 15);
+      print_mem_ascii(i, i + 15);
+      std::cout << std::endl;
+      count = 0;
+    } else {
+      // not time to print prefix
+      count++;
+    }
+  }
 }
 
 bool memory::load_file(const std::string &fname) {

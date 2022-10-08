@@ -23,6 +23,8 @@ public:
   void set16(uint32_t addr, uint16_t val);
   void set32(uint32_t addr, uint32_t val);
 
+  void print_mem_range(uint32_t start, uint32_t end) const;
+  void print_mem_ascii(uint32_t start, uint32_t end) const;
   void dump() const;
 
   bool load_file(const std ::string &fname);
