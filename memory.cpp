@@ -11,13 +11,15 @@ memory::memory(uint32_t siz) {
 }
 
 memory::~memory() {
-  // TODO clean up
+  // clean up
+  mem.clear();
 }
 
 bool memory::check_illegal(uint32_t addr) const {
   // check if addr is within range
   if (addr > get_size()) {
-    std::cout << "ERROR: OUT OF RANGE MEMORY" << std::endl;
+    std::cout << "WARNING: Address out of range: " << to_hex0x32(addr)
+              << std::endl;
     return true;
   }
   return false;
@@ -33,36 +35,30 @@ uint8_t memory::get8(uint32_t addr) const {
 }
 
 uint16_t memory::get16(uint32_t addr) const {
-  uint8_t msb = get8(addr + 1); // addr +1
   uint8_t lsb = get8(addr);     // just addr
+  uint8_t msb = get8(addr + 1); // addr +1
 
   return ((msb << 8) | (lsb));
 }
 
 uint32_t memory::get32(uint32_t addr) const {
-  uint16_t msb = get16(addr + 2);
   uint16_t lsb = get16(addr);
+  uint16_t msb = get16(addr + 2);
 
   return ((msb << 16) | (lsb));
 }
 
 int32_t memory::get8_sx(uint32_t addr) const {
-  // TODO
-  std::cout << addr;
-  return 0x00;
+  int8_t x = (int)(get8(addr));
+  return x;
 }
 
 int32_t memory::get16_sx(uint32_t addr) const {
-  // TODO
-  std::cout << addr;
-  return 0x00;
+  int16_t x = (int)(get16(addr));
+  return x;
 }
 
-int32_t memory::get32_sx(uint32_t addr) const {
-  // TODO
-  std::cout << addr;
-  return 0x00;
-}
+int32_t memory::get32_sx(uint32_t addr) const { return get32(addr); }
 
 void memory::set8(uint32_t addr, uint8_t val) {
   if (check_illegal(addr)) {
@@ -82,43 +78,17 @@ void memory::set16(uint32_t addr, uint16_t val) {
 
 void memory::set32(uint32_t addr, uint32_t val) {
   uint16_t lsb = (val & 0xFFFF);
-  uint16_t msb = ((val & 0xFF00) >> 16);
+  uint16_t msb = ((val & 0xFFFF0000) >> 16);
   set16(addr, lsb);
   set16(addr + 2, msb);
 }
-
-/*
-void memory::dump() const {
-  int count = 0;
-  for (std::size_t i = 0; i < mem.size(); i++) {
-    if (i % 16 == 0) {
-      // every 15 bytes
-      if (i != 0) {
-        std::cout << std::endl;
-      }
-      std::cout << to_hex32(i) << ":";
-      if (i == 0)
-        std::cout << to_hex8(get8(i)) << " ";
-    } else {
-      // print elements
-      std::cout << to_hex8(get8(i)) << " ";
-      count++;
-      if (count == 16) {
-        // std::cout << "test";
-        count = 0;
-      }
-    }
-  }
-  std::cout << std::endl;
-}
-*/
 
 void memory::print_mem_range(uint32_t start, uint32_t end) const {
   int counter = 0;
   for (; start < end; start++) {
     std::cout << to_hex8(get8(start)) << " ";
     counter++;
-    if ((counter % 8 == 0) && (start != 0)) {
+    if (counter == 8) {
       std::cout << " ";
     }
   }
@@ -139,8 +109,8 @@ void memory::dump() const {
   for (std::size_t i = 0; i < mem.size(); i++) {
     if (count == 15) {
       std::cout << to_hex32(i) << ": ";
-      print_mem_range(i, i + 15);
-      print_mem_ascii(i, i + 15);
+      print_mem_range(i, i + 16);
+      print_mem_ascii(i, i + 16);
       std::cout << std::endl;
       count = 0;
     } else {
