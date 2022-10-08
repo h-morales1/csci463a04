@@ -12,8 +12,7 @@ std::string hex::to_hex8(uint8_t i) {
 
 std::string hex::to_hex32(uint32_t i) {
   std::ostringstream os;
-  os << std::hex << std::setfill('0') << std::setw(8)
-     << static_cast<uint16_t>(i);
+  os << std::hex << std::setfill('0') << std::setw(8) << i;
 
   return os.str();
 }
