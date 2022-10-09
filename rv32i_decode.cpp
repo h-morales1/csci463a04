@@ -28,6 +28,15 @@ std::string rv32i_decode::decode(uint32_t addr, uint32_t insn) {
     case funct3_bne:
       return render_btype(addr, insn, "bne");
     }
+  case opcode_stype:
+    switch (get_funct3(insn)) {
+    default:
+      return render_illegal_insn(insn);
+    case funct3_sb:
+      return render_stype(insn, "sb");
+    case funct3_sh:
+      return render_stype(insn, "sh");
+    }
   case opcode_rtype:
     switch (get_funct3(insn)) {
     default:
@@ -186,6 +195,18 @@ std::string rv32i_decode::render_btype(uint32_t addr, uint32_t insn,
 
   os << render_mnemonic(mnemonic) << render_reg(get_rs1(insn)) << ","
      << render_reg(get_rs2(insn)) << "," << to_hex0x32(pc);
+
+  return os.str();
+}
+
+std::string rv32i_decode::render_stype(uint32_t insn, const char *mnemonic) {
+  uint32_t imm_s = get_imm_s(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t rs2 = get_rs2(insn);
+  std::ostringstream os;
+
+  os << render_mnemonic(mnemonic) << render_reg(rs2) << "," << (imm_s) << "("
+     << render_reg(rs1) << ")";
 
   return os.str();
 }
