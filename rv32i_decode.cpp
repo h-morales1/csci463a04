@@ -28,6 +28,15 @@ std::string rv32i_decode::decode(uint32_t addr, uint32_t insn) {
     case funct3_bne:
       return render_btype(addr, insn, "bne");
     }
+  case opcode_system:
+    switch (insn) { // TODO THIS IS FOR CSRRX
+    default:
+      return render_illegal_insn(insn);
+    case insn_ecall:
+      return render_ecall(insn);
+    case insn_ebreak:
+      return render_ebreak(insn);
+    }
   case opcode_jalr:
     return render_itype_load(insn, "jalr");
   case opcode_load_imm:
@@ -293,6 +302,22 @@ std::string rv32i_decode::render_rtype(uint32_t insn, const char *mnemonic) {
 
   os << render_mnemonic(mnemonic) << render_reg(rd) << ","
      << render_reg(get_rs1(insn)) << "," << render_reg(get_rs2(insn));
+
+  return os.str();
+}
+
+std::string rv32i_decode::render_ecall(uint32_t insn) {
+  std::ostringstream os;
+
+  os << render_mnemonic("ecall");
+
+  return os.str();
+}
+
+std::string rv32i_decode::render_ebreak(uint32_t insn) {
+  std::ostringstream os;
+
+  os << render_mnemonic("ebreak");
 
   return os.str();
 }
