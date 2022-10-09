@@ -28,6 +28,8 @@ std::string rv32i_decode::decode(uint32_t addr, uint32_t insn) {
     case funct3_bne:
       return render_btype(addr, insn, "bne");
     }
+  case opcode_jalr:
+    return render_itype_load(insn, "jalr");
   case opcode_load_imm:
     switch (get_funct3(insn)) {
     default:
