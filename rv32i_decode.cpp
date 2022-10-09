@@ -28,6 +28,34 @@ std::string rv32i_decode::decode(uint32_t addr, uint32_t insn) {
     case funct3_bne:
       return render_btype(addr, insn, "bne");
     }
+  case opcode_alu_imm:
+    switch (get_funct3(insn)) {
+    default:
+      return render_illegal_insn(insn);
+    case funct3_add:
+      return render_itype_alu(insn, "addi", get_imm_i(insn));
+    case funct3_slt:
+      return render_itype_alu(insn, "slti", get_imm_i(insn));
+    case funct3_sltu:
+      return render_itype_alu(insn, "sltiu", get_imm_i(insn));
+    case funct3_xor:
+      return render_itype_alu(insn, "xori", get_imm_i(insn));
+    case funct3_or:
+      return render_itype_alu(insn, "ori", get_imm_i(insn));
+    case funct3_and:
+      return render_itype_alu(insn, "andi", get_imm_i(insn));
+    case funct3_sll:
+      return render_itype_alu(insn, "slli", get_imm_i(insn) % XLEN);
+    case funct3_srx:
+      switch (get_funct7(insn)) {
+      default:
+        return render_illegal_insn(insn);
+      case funct7_sra:
+        return render_itype_alu(insn, "srai", get_imm_i(insn) % XLEN);
+      case funct7_srl:
+        return render_itype_alu(insn, "srli", get_imm_i(insn) % XLEN);
+      }
+    }
   case opcode_stype:
     switch (get_funct3(insn)) {
     default:
@@ -109,6 +137,13 @@ uint32_t rv32i_decode::get_rs2(uint32_t insn) {
 }
 
 // get imm_x funcs
+
+int32_t rv32i_decode::get_imm_i(uint32_t insn) {
+  int32_t imm_i = (insn >> 20);
+
+  return imm_i;
+}
+
 int32_t rv32i_decode::get_imm_u(uint32_t insn) {
   int32_t imm_u = (insn & 0xFFFFF000);
   return imm_u;
@@ -195,6 +230,18 @@ std::string rv32i_decode::render_btype(uint32_t addr, uint32_t insn,
 
   os << render_mnemonic(mnemonic) << render_reg(get_rs1(insn)) << ","
      << render_reg(get_rs2(insn)) << "," << to_hex0x32(pc);
+
+  return os.str();
+}
+
+std::string rv32i_decode::render_itype_alu(uint32_t insn, const char *mnemonic,
+                                           int32_t imm_i) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  std::ostringstream os;
+
+  os << render_mnemonic(mnemonic) << render_reg(rd) << "," << render_reg(rs1)
+     << "," << imm_i;
 
   return os.str();
 }
