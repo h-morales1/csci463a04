@@ -1,3 +1,5 @@
+#ifndef MEMORY_H
+#define MEMORY_H
 
 #include "hex.h"
 #include <algorithm>
@@ -32,3 +34,4 @@ public:
 private:
   std ::vector<uint8_t> mem;
 };
+#endif

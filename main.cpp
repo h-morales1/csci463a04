@@ -13,7 +13,7 @@ static void disassemble(const memory &mem) {
     if (i % 4 == 0) {
       //
       std::cout << hex::to_hex32(i) << ": " << hex::to_hex32(mem.get32(i))
-                << rv32i_decode::decode(i, mem.get32(i)) << std::endl;
+                << "  " << rv32i_decode::decode(i, mem.get32(i)) << std::endl;
     }
   }
 }

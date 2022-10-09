@@ -1,3 +1,6 @@
+#ifndef RV32I_DECODE_H
+#define RV32I_DECODE_H
+
 #include "hex.h"
 
 class rv32i_decode : public hex {
@@ -88,6 +91,9 @@ protected:
   static std::string render_btype(uint32_t addr, uint32_t insn,
                                   const char *mnemonic);
 
+  // helper func for all utype insns
+  static std::string render_utype(uint32_t insn, const char *mnemonic);
+
   static std::string render_itype_load(uint32_t insn, const char *mnemonic);
   static std::string render_stype(uint32_t insn, const char *mnemonic);
   static std::string render_itype_alu(uint32_t insn, const char *mnemonic,
@@ -102,3 +108,4 @@ protected:
   static std::string render_base_disp(uint32_t base, int32_t disp);
   static std::string render_mnemonic(const std::string &m);
 };
+#endif
