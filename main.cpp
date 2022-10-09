@@ -15,9 +15,19 @@
 #include <iostream>
 #include <unistd.h>
 using std::cerr;
-// using std::cout;
 using std::endl;
 
+/**
+ * Loop through the vector and for every 4 bytes, call
+ * the decode() function to extract the respective instruction
+ * and print a formatted string that details the mnemonic and
+ * any data associated with that instruction.
+ *
+ * @brief Loop through the vector and decode 4 bytes at a time.
+ *
+ * @param mem vector holding bytes to process.
+ *
+ ********************************************************************************/
 static void disassemble(const memory &mem) {
   //
   for (std::size_t i = 0; i < mem.get_size(); i++) {
@@ -28,13 +38,38 @@ static void disassemble(const memory &mem) {
     }
   }
 }
-
+/**
+ * Print a message to stderr telling the user how to
+ * properly run the program and then exiting with a
+ * return code of 1.
+ *
+ * @brief Print a message detailing how to run program.
+ *
+ ********************************************************************************/
 static void usage() {
   cerr << "Usage: rv32i [-m hex-mem-size] infile" << endl;
   cerr << "    -m specify memory size (default = 0x100)" << endl;
   exit(1);
 }
-
+/**
+ * Check whether user set specific memory size as argument, if not then
+ * a default of 0x100 is used. If incorrect arguments are passed in then
+ * usage() is called. Then load_file() is used to load the file into
+ * the vector. If the file is not properly loaded into the vector then an
+ * error message is displayed as well usage() is called. Once the file
+ * is loaded into the vector, disassemble() is called and this function
+ * wil process the entirety of the vector, printing decoded instructions.
+ * then dump() is called in order to dump the contents of the vector onto
+ * the screen. Function then returns with success.
+ *
+ * @brief Load file into memory and disassemble.
+ *
+ * @param argc argument count.
+ * @param argv array containing all arguments.
+ *
+ * @return Error or success of disassembling file.
+ *
+ ********************************************************************************/
 int main(int argc, char **argv) {
   uint32_t memory_limit = 0x100; // default memory size is 0x100
 
@@ -61,35 +96,6 @@ int main(int argc, char **argv) {
 
   disassemble(mem);
   mem.dump();
-
-  /*
-    cout << mem.get_size() << endl;
-    cout << hex::to_hex32(mem.get8(0)) << endl;
-    cout << hex::to_hex32(mem.get16(0)) << endl;
-    cout << hex::to_hex32(mem.get32(0)) << endl;
-    cout << hex::to_hex0x32(mem.get8(0)) << endl;
-    cout << hex::to_hex0x32(mem.get16(0)) << endl;
-    cout << hex::to_hex0x32(mem.get32(0)) << endl;
-    cout << hex::to_hex8(mem.get8(0)) << endl;
-    cout << hex::to_hex8(mem.get16(0)) << endl;
-    cout << hex::to_hex8(mem.get32(0)) << endl;
-
-    cout << hex::to_hex0x32(mem.get32(0x1000)) << endl;
-
-    mem.set8(0x10, 0x12);
-    mem.set16(0x14, 0x1234);
-    mem.set32(0x18, 0x87654321);
-
-    cout << hex::to_hex0x32(mem.get8_sx(0x0f)) << endl;
-    cout << hex::to_hex0x32(mem.get8_sx(0x7f)) << endl;
-    cout << hex::to_hex0x32(mem.get8_sx(0x80)) << endl;
-    cout << hex::to_hex0x32(mem.get8_sx(0xe3)) << endl;
-
-    cout << hex::to_hex0x32(mem.get16_sx(0xe0)) << endl;
-    cout << hex::to_hex0x32(mem.get32_sx(0xe0)) << endl;
-
-    mem.dump();
-  */
 
   return 0;
 }
