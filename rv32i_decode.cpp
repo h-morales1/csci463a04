@@ -29,13 +29,24 @@ std::string rv32i_decode::decode(uint32_t addr, uint32_t insn) {
       return render_btype(addr, insn, "bne");
     }
   case opcode_system:
-    switch (insn) { // TODO THIS IS FOR CSRRX
+    switch (get_funct3(insn)) { // TODO THIS IS FOR CSRRX
     default:
       return render_illegal_insn(insn);
-    case insn_ecall:
-      return render_ecall(insn);
-    case insn_ebreak:
-      return render_ebreak(insn);
+    case funct3_add: // ebreak and ecall
+      switch (insn) {
+      default:
+        return render_illegal_insn(insn);
+      case insn_ebreak:
+        return render_ebreak(insn);
+      case insn_ecall:
+        return render_ecall(insn);
+      }
+    case funct3_csrrw:
+      return render_csrrx(insn, "csrrw");
+    case funct3_csrrs:
+      return render_csrrx(insn, "csrrs");
+    case funct3_csrrc:
+      return render_csrrx(insn, "csrrc");
     }
   case opcode_jalr:
     return render_itype_load(insn, "jalr");
@@ -318,6 +329,18 @@ std::string rv32i_decode::render_ebreak(uint32_t insn) {
   std::ostringstream os;
 
   os << render_mnemonic("ebreak");
+
+  return os.str();
+}
+
+std::string rv32i_decode::render_csrrx(uint32_t insn, const char *mnemonic) {
+  uint32_t rd = get_rd(insn);
+  uint32_t csr = get_imm_i(insn);
+  uint32_t rs1 = get_rs1(insn);
+  std::ostringstream os;
+
+  os << render_mnemonic(mnemonic) << render_reg(rd) << "," << to_hex0x20(csr)
+     << "," << render_reg(rs1);
 
   return os.str();
 }
