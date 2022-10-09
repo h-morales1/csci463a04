@@ -28,6 +28,19 @@ std::string rv32i_decode::decode(uint32_t addr, uint32_t insn) {
     case funct3_bne:
       return render_btype(addr, insn, "bne");
     }
+  case opcode_load_imm:
+    switch (get_funct3(insn)) {
+    default:
+      return render_illegal_insn(insn);
+    case funct3_lb:
+      return render_itype_load(insn, "lb");
+    case funct3_lbu:
+      return render_itype_load(insn, "lbu");
+    case funct3_lh:
+      return render_itype_load(insn, "lh");
+    case funct3_lhu:
+      return render_itype_load(insn, "lhu");
+    }
   case opcode_alu_imm:
     switch (get_funct3(insn)) {
     default:
@@ -230,6 +243,19 @@ std::string rv32i_decode::render_btype(uint32_t addr, uint32_t insn,
 
   os << render_mnemonic(mnemonic) << render_reg(get_rs1(insn)) << ","
      << render_reg(get_rs2(insn)) << "," << to_hex0x32(pc);
+
+  return os.str();
+}
+
+std::string rv32i_decode::render_itype_load(uint32_t insn,
+                                            const char *mnemonic) {
+  uint32_t rd = get_rd(insn);
+  int32_t imm_i = get_imm_i(insn);
+  uint32_t rs1 = get_rs1(insn);
+  std::ostringstream os;
+
+  os << render_mnemonic(mnemonic) << render_reg(rd) << "," << imm_i << "("
+     << rs1 << ")";
 
   return os.str();
 }
