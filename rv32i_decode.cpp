@@ -47,6 +47,12 @@ std::string rv32i_decode::decode(uint32_t addr, uint32_t insn) {
       return render_csrrx(insn, "csrrs");
     case funct3_csrrc:
       return render_csrrx(insn, "csrrc");
+    case funct3_csrrwi:
+      return render_csrrxi(insn, "csrrwi");
+    case funct3_csrrsi:
+      return render_csrrxi(insn, "csrrsi");
+    case funct3_csrrci:
+      return render_csrrxi(insn, "csrrci");
     }
   case opcode_jalr:
     return render_itype_load(insn, "jalr");
@@ -341,6 +347,18 @@ std::string rv32i_decode::render_csrrx(uint32_t insn, const char *mnemonic) {
 
   os << render_mnemonic(mnemonic) << render_reg(rd) << "," << to_hex0x20(csr)
      << "," << render_reg(rs1);
+
+  return os.str();
+}
+
+std::string rv32i_decode::render_csrrxi(uint32_t insn, const char *mnemonic) {
+  uint32_t rd = get_rd(insn);
+  uint32_t csr = get_imm_i(insn);
+  uint32_t zimm = get_rs1(insn);
+  std::ostringstream os;
+
+  os << render_mnemonic(mnemonic) << render_reg(rd) << "," << to_hex0x20(csr)
+     << "," << (int)(zimm);
 
   return os.str();
 }
