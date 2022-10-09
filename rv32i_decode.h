@@ -16,7 +16,22 @@
 
 class rv32i_decode : public hex {
 public:
-  ///@parm addr The memory address where the insn is stored.
+  /**
+   * This function will take in an address of the current instruction as well
+   * as the instruction itself, pass the insn into a large switch statement to
+   * determine which instruction is to be rendered to the screen, depending
+   * on the opcode or other sections of the bits in the insn, if no suitable
+   *opcode is found then there will be an error displayed on screen.
+   *
+   * @brief This function will take an instruction and decode it to render
+   *        the proper instruction onto the screen.
+   *
+   * @param addr current address of the instruction loaded.
+   * @param insn instruction to decode.
+   *
+   * @return The final instruction string to be printed to screen.
+   *
+   ********************************************************************************/
   static std::string decode(uint32_t addr, uint32_t insn);
 
 protected:
@@ -75,48 +90,425 @@ protected:
   static constexpr uint32_t funct3_csrrsi = 0b110;
   static constexpr uint32_t funct3_csrrci = 0b111;
 
+  /**
+   * This function will take in an instruction and remove
+   * bits which are not necessary in order to reach the
+   * instructions opcode.
+   *
+   * @brief This function will take an instruction and decode it to extract
+   *        the respective opcode.
+   *
+   * @param insn instruction to decode.
+   *
+   * @return extracted opcode.
+   *
+   ********************************************************************************/
   static uint32_t get_opcode(uint32_t insn);
+  /**
+   * This function will take in an instruction and remove
+   * bits which are not necessary in order to reach the
+   * bits which represent the register number.
+   *
+   * @brief This function will take an instruction and extract
+   *        the register number from it.
+   *
+   * @param insn instruction to process.
+   *
+   * @return extracted register.
+   *
+   ********************************************************************************/
   static uint32_t get_rd(uint32_t insn);
+  /**
+   * This function will take in an instruction and remove
+   * bits which are not necessary in order to reach the
+   * bits which represent funct3.
+   *
+   * @brief This function will take an instruction and extract
+   *        funct3.
+   *
+   * @param insn instruction to process.
+   *
+   * @return extracted funct3.
+   *
+   ********************************************************************************/
   static uint32_t get_funct3(uint32_t insn);
+  /**
+   * This function will take in an instruction and remove
+   * bits which are not necessary in order to reach the
+   * bits which represent rs1.
+   *
+   * @brief This function will take an instruction and extract
+   *        rs1.
+   *
+   * @param insn instruction to process.
+   *
+   * @note The same process is taken for get_rs2() except at a different
+   *       spot in the instruction.
+   *
+   * @return extracted rs1.
+   *
+   ********************************************************************************/
   static uint32_t get_rs1(uint32_t insn);
   static uint32_t get_rs2(uint32_t insn);
+  /**
+   * This function will take in an instruction and remove
+   * bits which are not necessary in order to reach the
+   * bits which represent funct7.
+   *
+   * @brief This function will take an instruction and extract
+   *        funct7.
+   *
+   * @param insn instruction to process.
+   *
+   * @note The same process is taken for get_funct3() except at a different
+   *       spot in the instruction.
+   *
+   * @return extracted funct7.
+   *
+   ********************************************************************************/
   static uint32_t get_funct7(uint32_t insn);
+  /**
+   * This function will take in an instruction and remove
+   * bits which are not necessary in order to reach the
+   * bits which represent the imm_i.
+   *
+   * @brief This function will take an instruction and extract
+   *        imm_i.
+   *
+   * @param insn instruction to process.
+   *
+   * @return extracted imm_i.
+   *
+   ********************************************************************************/
   static int32_t get_imm_i(uint32_t insn);
+  /**
+   * This function will take in an instruction and remove
+   * bits which are not necessary in order to reach the
+   * bits which represent the imm_u.
+   *
+   * @brief This function will take an instruction and extract
+   *        imm_u.
+   *
+   * @param insn instruction to process.
+   *
+   * @return extracted imm_u.
+   *
+   ********************************************************************************/
   static int32_t get_imm_u(uint32_t insn);
+  /**
+   * This function will take in an instruction and remove
+   * bits which are not necessary in order to reach the
+   * bits which represent the imm_b.
+   *
+   * @brief This function will take an instruction and extract
+   *        imm_b.
+   *
+   * @param insn instruction to process.
+   *
+   * @return extracted imm_b.
+   *
+   ********************************************************************************/
   static int32_t get_imm_b(uint32_t insn);
+  /**
+   * This function will take in an instruction and remove
+   * bits which are not necessary in order to reach the
+   * bits which represent the imm_s.
+   *
+   * @brief This function will take an instruction and extract
+   *        imm_s.
+   *
+   * @param insn instruction to process.
+   *
+   * @return extracted imm_s.
+   *
+   ********************************************************************************/
   static int32_t get_imm_s(uint32_t insn);
+  /**
+   * This function will take in an instruction and remove
+   * bits which are not necessary in order to reach the
+   * bits which represent the imm_j.
+   *
+   * @brief This function will take an instruction and extract
+   *        imm_j.
+   *
+   * @param insn instruction to process.
+   *
+   * @return extracted imm_j.
+   *
+   ********************************************************************************/
   static int32_t get_imm_j(uint32_t insn);
 
   static constexpr uint32_t XLEN = 32;
-
+  /**
+   * This function will return an error message to display
+   * when the decode() function does not recognize the instruction
+   *  passed in to decode.
+   *
+   * @brief This function will print an error message if
+   *        the instruction is not recognized.
+   *
+   * @param insn instruction to process.
+   *
+   * @return error string to print.
+   *
+   ********************************************************************************/
   static std::string render_illegal_insn(uint32_t insn);
+  /**
+   * This function will return a string which will be
+   * formatted to include the instruction mnemonic,
+   * along with register and imm_u extracted from
+   * the instruction.
+   *
+   * @brief This function will return a string to print
+   *        the lui instruction.
+   *
+   * @param insn instruction to process.
+   *
+   * @return string to print out lui instruction.
+   *
+   ********************************************************************************/
   static std::string render_lui(uint32_t insn);
+  /**
+   * This function will return a string which will be
+   * formatted to include the instruction mnemonic,
+   * along with register and imm_u extracted from
+   * the instruction.
+   *
+   * @brief This function will return a string to print
+   *        the auipc instruction.
+   *
+   * @param insn instruction to process.
+   *
+   * @return string to print out auipc instruction.
+   *
+   ********************************************************************************/
   static std::string render_auipc(uint32_t insn);
-
-  ///@parm addr The memory address where the insn is stored.
+  /**
+   * This function will return a string which will be
+   * formatted to include the instruction mnemonic,
+   * along with register and jump addr extracted from
+   * the instruction.
+   *
+   * @brief This function will return a string to print
+   *        the jal instruction.
+   *
+   * @param addr address where instruction is stored.
+   * @param insn instruction to process.
+   *
+   * @return string to print out jal instruction.
+   *
+   ********************************************************************************/
   static std::string render_jal(uint32_t addr, uint32_t insn);
-
+  /**
+   * This function will return a string which will be
+   * formatted to include the instruction mnemonic,
+   * along with register, imm_i and rs1 extracted from
+   * the instruction.
+   *
+   * @brief This function will return a string to print
+   *        the jalr instruction.
+   *
+   * @param insn instruction to process.
+   *
+   * @return string to print out jalr instruction.
+   *
+   ********************************************************************************/
   static std::string render_jalr(uint32_t insn);
-
-  ///@parm addr The memory address where the insn is stored.
+  /**
+   * This function will return a string which will be
+   * formatted to include the instruction mnemonic,
+   * along with rs1, rs2 and the address to branch to,
+   * all extracted from the instruction.
+   *
+   * @brief This function will return a string to print
+   *        all b-type instructions.
+   *
+   * @param addr address of where instruction is stored.
+   * @param insn instruction to process.
+   * @param mnemonic instruction mnemonic.
+   *
+   * @return string to print out b-type instruction.
+   *
+   ********************************************************************************/
   static std::string render_btype(uint32_t addr, uint32_t insn,
                                   const char *mnemonic);
-
-  // helper func for all utype insns
+  /**
+   * This function will return a string which will be
+   * formatted to include the instruction mnemonic,
+   * along with register number and imm_u.
+   *
+   * @brief This function will return a string to print
+   *        all u-type instructions.
+   *
+   * @param insn instruction to process.
+   * @param mnemonic instruction mnemonic.
+   *
+   * @return string to print out u-type instruction.
+   *
+   ********************************************************************************/
   static std::string render_utype(uint32_t insn, const char *mnemonic);
-
+  /**
+   * This function will return a string which will be
+   * formatted to include the instruction mnemonic,
+   * along with register number, imm_i and rs1.
+   *
+   * @brief This function will return a string to print
+   *        all i-type load instructions.
+   *
+   * @param insn instruction to process.
+   * @param mnemonic instruction mnemonic.
+   *
+   * @return string to print out i-type load instruction.
+   *
+   ********************************************************************************/
   static std::string render_itype_load(uint32_t insn, const char *mnemonic);
+  /**
+   * This function will return a string which will be
+   * formatted to include the instruction mnemonic,
+   * along with rs2, imm_s and rs1.
+   *
+   * @brief This function will return a string to print
+   *        all s-type instructions.
+   *
+   * @param insn instruction to process.
+   * @param mnemonic instruction mnemonic.
+   *
+   * @return string to print out s-type instruction.
+   *
+   ********************************************************************************/
   static std::string render_stype(uint32_t insn, const char *mnemonic);
+  /**
+   * This function will return a string which will be
+   * formatted to include the instruction mnemonic,
+   * along with register number, rs1 and imm_i.
+   *
+   * @brief This function will return a string to print
+   *        all i-type alu instructions.
+   *
+   * @param insn instruction to process.
+   * @param mnemonic instruction mnemonic.
+   * @param imm_i instruction extracted immediate memory.
+   *
+   * @return string to print out i-type alu instruction.
+   *
+   ********************************************************************************/
   static std::string render_itype_alu(uint32_t insn, const char *mnemonic,
                                       int32_t imm_i);
+  /**
+   * This function will return a string which will be
+   * formatted to include the instruction mnemonic,
+   * along with register number, rs1 and rs2 extracted from
+   * the instruction.
+   *
+   * @brief This function will return a string to print
+   *        all r-type instructions.
+   *
+   * @param insn instruction to process.
+   * @param mnemonic instruction mnemonic.
+   *
+   * @return string to print out r-type instruction.
+   *
+   ********************************************************************************/
   static std::string render_rtype(uint32_t insn, const char *mnemonic);
+  /**
+   * This function will return a string which will be
+   * formatted to include the instruction mnemonic.
+   *
+   * @brief This function will return a string to print ecall instruction.
+   *
+   * @param insn instruction to process.
+   *
+   * @return string to print out ecall instruction.
+   *
+   ********************************************************************************/
   static std::string render_ecall(uint32_t insn);
+  /**
+   * This function will return a string which will be
+   * formatted to include the instruction mnemonic.
+   *
+   * @brief This function will return a string to print ebreak instruction.
+   *
+   * @param insn instruction to process.
+   *
+   * @return string to print out ebreak instruction.
+   *
+   ********************************************************************************/
   static std::string render_ebreak(uint32_t insn);
+  /**
+   * This function will return a string which will be
+   * formatted to include the instruction mnemonic,
+   * along with register number, csr and rs1 extracted from
+   * the instruction.
+   *
+   * @brief This function will return a string to print
+   *        all csrrx-type instructions.
+   *
+   * @param insn instruction to process.
+   * @param mnemonic instruction mnemonic.
+   *
+   * @note this is a subtype of i-type instructions.
+   *
+   * @return string to print out csrrx-type instruction.
+   *
+   ********************************************************************************/
   static std::string render_csrrx(uint32_t insn, const char *mnemonic);
+  /**
+   * This function will return a string which will be
+   * formatted to include the instruction mnemonic,
+   * along with register number, csr and zimm extracted from
+   * the instruction.
+   *
+   * @brief This function will return a string to print
+   *        all csrrxi-type instructions.
+   *
+   * @param insn instruction to process.
+   * @param mnemonic instruction mnemonic.
+   *
+   * @note this is a subtype of i-type instructions.
+   *
+   * @return string to print out csrrxi-type instruction.
+   *
+   ********************************************************************************/
   static std::string render_csrrxi(uint32_t insn, const char *mnemonic);
-
+  /**
+   * This function will return a string which will be
+   * formatted to include the register number with an
+   * 'x' as a prefix.
+   *
+   * @brief This function will return a string to print
+   *        a register number.
+   *
+   * @param r register number to print.
+   *
+   * @return string to print out register number.
+   *
+   ********************************************************************************/
   static std::string render_reg(int r);
+  /**
+   * This function will return a string which will be
+   * formatted to include the calculated base displacement.
+   *
+   * @brief This function will return base displacement as a string.
+   *
+   * @param base starting point.
+   * @param disp amount to displace.
+   *
+   * @return string to print out displacement.
+   *
+   ********************************************************************************/
   static std::string render_base_disp(uint32_t base, int32_t disp);
+  /**
+   * This function will return a string which will be
+   * formatted to include the mnemonic while maintaining
+   * the correct amount of white space, left justified.
+   *
+   * @brief This function will return the mnemonic as a string.
+   *
+   * @param m mnemonic to process.
+   *
+   * @return string to print out formatted mnemonic.
+   *
+   ********************************************************************************/
   static std::string render_mnemonic(const std::string &m);
 };
 #endif
