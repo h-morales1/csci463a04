@@ -28,6 +28,8 @@ std::string rv32i_decode::decode(uint32_t addr, uint32_t insn) {
     case funct3_bne:
       return render_btype(addr, insn, "bne");
     }
+  case opcode_jal:
+    return render_jal(addr, insn);
   case opcode_system:
     switch (get_funct3(insn)) { // TODO THIS IS FOR CSRRX
     default:
@@ -107,6 +109,8 @@ std::string rv32i_decode::decode(uint32_t addr, uint32_t insn) {
       return render_stype(insn, "sb");
     case funct3_sh:
       return render_stype(insn, "sh");
+    case funct3_sw:
+      return render_stype(insn, "sw");
     }
   case opcode_rtype:
     switch (get_funct3(insn)) {
@@ -211,6 +215,15 @@ int32_t rv32i_decode::get_imm_s(uint32_t insn) {
   return imm_s;
 }
 
+int32_t rv32i_decode::get_imm_j(uint32_t insn) {
+  int32_t bef = ((insn >> 21) & 0x3FF) | (((insn >> 20) & 0x1) << 10);
+
+  int32_t second_half =
+      (((insn >> 12) & 0xFF) << 11) | ((((int32_t)insn) >> 31)) << 19;
+
+  return ((bef | second_half) << 1);
+}
+
 // render funcs
 std::string rv32i_decode::render_illegal_insn(uint32_t insn) {
   return "ERROR: UNIMPLEMENTED INSTRUCTION";
@@ -230,6 +243,17 @@ std::string rv32i_decode::render_lui(uint32_t insn) {
 std::string rv32i_decode::render_auipc(uint32_t insn) {
   //
   return render_utype(insn, "auipc");
+}
+
+std::string rv32i_decode::render_jal(uint32_t addr, uint32_t insn) {
+  int32_t imm_j = get_imm_j(insn);
+  uint32_t pc = addr + imm_j;
+  uint32_t rd = get_rd(insn);
+  std::ostringstream os;
+
+  os << render_mnemonic("jal") << render_reg(rd) << "," << to_hex0x32(pc);
+
+  return os.str();
 }
 
 // helper render funcs
