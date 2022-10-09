@@ -66,6 +66,8 @@ std::string rv32i_decode::decode(uint32_t addr, uint32_t insn) {
       return render_itype_load(insn, "lbu");
     case funct3_lh:
       return render_itype_load(insn, "lh");
+    case funct3_lw:
+      return render_itype_load(insn, "lw");
     case funct3_lhu:
       return render_itype_load(insn, "lhu");
     }
@@ -283,7 +285,7 @@ std::string rv32i_decode::render_itype_load(uint32_t insn,
   std::ostringstream os;
 
   os << render_mnemonic(mnemonic) << render_reg(rd) << "," << imm_i << "("
-     << rs1 << ")";
+     << render_reg(rs1) << ")";
 
   return os.str();
 }
