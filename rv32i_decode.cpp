@@ -1,3 +1,14 @@
+//***************************************************************************
+//
+//  Herbert Morales
+//  Z1959955
+//  CSCI-463-MSTR
+//
+//  I certify that this is my own work and where appropriate an extension
+//  of the starter code provided for the assignment.
+//
+//***************************************************************************
+
 #include "rv32i_decode.h"
 #include <assert.h>
 #include <cstdint>
