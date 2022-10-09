@@ -17,6 +17,14 @@ std::string hex::to_hex32(uint32_t i) {
   return os.str();
 }
 
+std::string hex::to_hex0x20(uint32_t i) {
+  std::ostringstream os;
+
+  os << "0x" << std::hex << std::setfill('0') << std::setw(5) << i;
+
+  return os.str();
+}
+
 std::string hex::to_hex0x32(uint32_t i) {
   return std::string("0x") + to_hex32(i);
 }
