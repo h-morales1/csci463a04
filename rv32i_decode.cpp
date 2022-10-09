@@ -11,6 +11,23 @@ std::string rv32i_decode::decode(uint32_t addr, uint32_t insn) {
     return render_lui(insn);
   case opcode_auipc:
     return render_auipc(insn);
+  case opcode_btype:
+    switch (get_funct3(insn)) {
+    default:
+      return render_illegal_insn(insn);
+    case funct3_beq:
+      return render_btype(addr, insn, "beq");
+    case funct3_bge:
+      return render_btype(addr, insn, "bge");
+    case funct3_bgeu:
+      return render_btype(addr, insn, "bgeu");
+    case funct3_blt:
+      return render_btype(addr, insn, "blt");
+    case funct3_bltu:
+      return render_btype(addr, insn, "bltu");
+    case funct3_bne:
+      return render_btype(addr, insn, "bne");
+    }
   case opcode_rtype:
     switch (get_funct3(insn)) {
     default:
@@ -88,6 +105,15 @@ int32_t rv32i_decode::get_imm_u(uint32_t insn) {
   return imm_u;
 }
 
+int32_t rv32i_decode::get_imm_b(uint32_t insn) {
+  int32_t imm_b =
+      (((insn >> 8) & 0xF) | (((insn >> 25) & 0x3F) << 4) |
+       (((insn >> 7) & 0x1) << 10) | ((((int32_t)insn) >> 31)) << 11)
+      << 1;
+
+  return imm_b;
+}
+
 int32_t rv32i_decode::get_imm_s(uint32_t insn) {
   int32_t imm_s = (insn & 0xFE000000) >> (25 - 5);
   imm_s |= (insn & 0x00000F80) >> (7 - 0);
@@ -129,6 +155,37 @@ std::string rv32i_decode::render_utype(uint32_t insn, const char *mnemonic) {
 
   os << render_mnemonic(mnemonic) << render_reg(rd) << ","
      << to_hex0x20((imm_u >> 12) & 0x0FFFFF);
+
+  return os.str();
+}
+
+std::string rv32i_decode::render_btype(uint32_t addr, uint32_t insn,
+                                       const char *mnemonic) {
+  std::ostringstream os;
+  uint32_t pc = addr; // TODO this is to be moved because it only deals with BEQ
+  uint32_t offset; // = (get_rs1(insn) == get_rs2(insn) ? get_imm_b(insn) : 4);
+
+  switch (get_funct3(insn)) {
+  default:
+    return render_illegal_insn(insn);
+  case funct3_beq:
+    offset = (get_rs1(insn) == get_rs2(insn) ? get_imm_b(insn) : 4);
+  case funct3_bge:
+    offset = (get_rs1(insn) >= get_rs2(insn) ? get_imm_b(insn) : 4);
+  case funct3_bgeu:
+    offset = (get_rs1(insn) >= get_rs2(insn) ? get_imm_b(insn) : 4);
+  case funct3_blt:
+    offset = (get_rs1(insn) < get_rs2(insn) ? get_imm_b(insn) : 4);
+  case funct3_bltu:
+    offset = (get_rs1(insn) < get_rs2(insn) ? get_imm_b(insn) : 4);
+  case funct3_bne:
+    offset = (get_rs1(insn) != get_rs2(insn) ? get_imm_b(insn) : 4);
+  }
+
+  pc += offset;
+
+  os << render_mnemonic(mnemonic) << render_reg(get_rs1(insn)) << ","
+     << render_reg(get_rs2(insn)) << "," << to_hex0x32(pc);
 
   return os.str();
 }
