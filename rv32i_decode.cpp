@@ -369,7 +369,7 @@ std::string rv32i_decode::render_rtype(uint32_t insn, const char *mnemonic) {
 std::string rv32i_decode::render_ecall(uint32_t insn) {
   std::ostringstream os;
 
-  os << render_mnemonic("ecall");
+  os << std::left << std::setw(5) << std::setfill(' ') << "ecall";
 
   return os.str();
 }
@@ -377,7 +377,7 @@ std::string rv32i_decode::render_ecall(uint32_t insn) {
 std::string rv32i_decode::render_ebreak(uint32_t insn) {
   std::ostringstream os;
 
-  os << render_mnemonic("ebreak");
+  os << std::left << std::setw(6) << std::setfill(' ') << "ebreak";
 
   return os.str();
 }
