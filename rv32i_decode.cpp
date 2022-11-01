@@ -326,8 +326,8 @@ std::string rv32i_decode::render_stype(uint32_t insn, const char *mnemonic) {
   uint32_t rs2 = get_rs2(insn);
   std::ostringstream os;
 
-  os << render_mnemonic(mnemonic) << render_reg(rs2) << "," << (imm_s) << "("
-     << render_reg(rs1) << ")";
+  os << render_mnemonic(mnemonic) << render_reg(rs2) << ","
+     << render_base_disp(rs1, imm_s);
 
   return os.str();
 }
