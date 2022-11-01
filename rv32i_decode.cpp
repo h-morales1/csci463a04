@@ -284,36 +284,13 @@ std::string rv32i_decode::render_utype(uint32_t insn, const char *mnemonic) {
 std::string rv32i_decode::render_btype(uint32_t addr, uint32_t insn,
                                        const char *mnemonic) {
   std::ostringstream os;
-  uint32_t pc = addr; // TODO this is to be moved because it only deals with BEQ
-  uint32_t offset; // = (get_rs1(insn) == get_rs2(insn) ? get_imm_b(insn) : 4);
+  uint32_t pc_rel13 = addr;
+  int32_t offset = get_imm_b(insn);
 
-  switch (get_funct3(insn)) {
-  default:
-    return render_illegal_insn(insn);
-  case funct3_beq:
-    offset = (get_rs1(insn) == get_rs2(insn) ? get_imm_b(insn) : 4);
-    break;
-  case funct3_bge:
-    offset = (get_rs1(insn) >= get_rs2(insn) ? get_imm_b(insn) : 4);
-    break;
-  case funct3_bgeu:
-    offset = (get_rs1(insn) >= get_rs2(insn) ? get_imm_b(insn) : 4);
-    break;
-  case funct3_blt:
-    offset = (get_rs1(insn) < get_rs2(insn) ? get_imm_b(insn) : 4);
-    break;
-  case funct3_bltu:
-    offset = (get_rs1(insn) < get_rs2(insn) ? get_imm_b(insn) : 4);
-    break;
-  case funct3_bne:
-    offset = (get_rs1(insn) == get_rs2(insn) ? get_imm_b(insn) : 4);
-    break;
-  }
-
-  pc += offset;
+  pc_rel13 += offset;
 
   os << render_mnemonic(mnemonic) << render_reg(get_rs1(insn)) << ","
-     << render_reg(get_rs2(insn)) << "," << to_hex0x32(pc);
+     << render_reg(get_rs2(insn)) << "," << to_hex0x32(pc_rel13);
 
   return os.str();
 }
