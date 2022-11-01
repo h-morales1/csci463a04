@@ -47,6 +47,7 @@ public:
    *
    ********************************************************************************/
   static std::string to_hex32(uint32_t i);
+  static std::string to_hex0x12(uint32_t i);
   /**
    * This function will take in an unsigned number and return its
    * hex equivalent as a string which will be formatted to have

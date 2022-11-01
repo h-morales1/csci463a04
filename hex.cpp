@@ -27,6 +27,15 @@ std::string hex::to_hex32(uint32_t i) {
   return os.str();
 }
 
+std::string hex::to_hex0x12(uint32_t i) {
+  std::ostringstream os;
+  i = (i & 0x00000fff);
+
+  os << "0x" << std::hex << std::setfill('0') << std::setw(3) << i;
+
+  return os.str();
+}
+
 std::string hex::to_hex0x20(uint32_t i) {
   std::ostringstream os;
 

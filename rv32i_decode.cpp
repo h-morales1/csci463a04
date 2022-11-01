@@ -388,7 +388,7 @@ std::string rv32i_decode::render_csrrx(uint32_t insn, const char *mnemonic) {
   uint32_t rs1 = get_rs1(insn);
   std::ostringstream os;
 
-  os << render_mnemonic(mnemonic) << render_reg(rd) << "," << to_hex0x20(csr)
+  os << render_mnemonic(mnemonic) << render_reg(rd) << "," << to_hex0x12(csr)
      << "," << render_reg(rs1);
 
   return os.str();
@@ -400,7 +400,7 @@ std::string rv32i_decode::render_csrrxi(uint32_t insn, const char *mnemonic) {
   uint32_t zimm = get_rs1(insn);
   std::ostringstream os;
 
-  os << render_mnemonic(mnemonic) << render_reg(rd) << "," << to_hex0x20(csr)
+  os << render_mnemonic(mnemonic) << render_reg(rd) << "," << to_hex0x12(csr)
      << "," << (int)(zimm);
 
   return os.str();
