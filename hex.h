@@ -47,6 +47,18 @@ public:
    *
    ********************************************************************************/
   static std::string to_hex32(uint32_t i);
+  /**
+   * This function will take in an unsigned number and return its
+   * hex equivalent as a string which will be formatted to have
+   * leading zeros and will add on '0x' as a prefix to the string.
+   *
+   * @brief convert param into hex and return as string.
+   *
+   * @param i number to process.
+   *
+   * @return Formatted string containing hex number.
+   *
+   ********************************************************************************/
   static std::string to_hex0x12(uint32_t i);
   /**
    * This function will take in an unsigned number and return its
