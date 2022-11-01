@@ -197,7 +197,7 @@ uint32_t rv32i_decode::get_rs2(uint32_t insn) {
 // get imm_x funcs
 
 int32_t rv32i_decode::get_imm_i(uint32_t insn) {
-  int32_t imm_i = (insn >> 20);
+  int32_t imm_i = ((int32_t)insn) >> 20;
 
   return imm_i;
 }
@@ -325,8 +325,8 @@ std::string rv32i_decode::render_itype_load(uint32_t insn,
   uint32_t rs1 = get_rs1(insn);
   std::ostringstream os;
 
-  os << render_mnemonic(mnemonic) << render_reg(rd) << "," << imm_i << "("
-     << render_reg(rs1) << ")";
+  os << render_mnemonic(mnemonic) << render_reg(rd) << ","
+     << render_base_disp(rs1, imm_i);
 
   return os.str();
 }
@@ -410,6 +410,14 @@ std::string rv32i_decode::render_csrrxi(uint32_t insn, const char *mnemonic) {
 std::string rv32i_decode::render_reg(int r) {
   std::ostringstream os;
   os << 'x' << r;
+
+  return os.str();
+}
+
+std::string rv32i_decode::render_base_disp(uint32_t regr, int32_t imm) {
+  std::ostringstream os;
+
+  os << imm << '(' << 'x' << regr << ')';
 
   return os.str();
 }

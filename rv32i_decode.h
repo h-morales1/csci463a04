@@ -496,7 +496,7 @@ protected:
    * @return string to print out displacement.
    *
    ********************************************************************************/
-  static std::string render_base_disp(uint32_t base, int32_t disp);
+  static std::string render_base_disp(uint32_t regr, int32_t imm);
   /**
    * This function will return a string which will be
    * formatted to include the mnemonic while maintaining
