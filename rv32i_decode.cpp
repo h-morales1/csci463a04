@@ -292,16 +292,22 @@ std::string rv32i_decode::render_btype(uint32_t addr, uint32_t insn,
     return render_illegal_insn(insn);
   case funct3_beq:
     offset = (get_rs1(insn) == get_rs2(insn) ? get_imm_b(insn) : 4);
+    break;
   case funct3_bge:
     offset = (get_rs1(insn) >= get_rs2(insn) ? get_imm_b(insn) : 4);
+    break;
   case funct3_bgeu:
     offset = (get_rs1(insn) >= get_rs2(insn) ? get_imm_b(insn) : 4);
+    break;
   case funct3_blt:
     offset = (get_rs1(insn) < get_rs2(insn) ? get_imm_b(insn) : 4);
+    break;
   case funct3_bltu:
     offset = (get_rs1(insn) < get_rs2(insn) ? get_imm_b(insn) : 4);
+    break;
   case funct3_bne:
-    offset = (get_rs1(insn) != get_rs2(insn) ? get_imm_b(insn) : 4);
+    offset = (get_rs1(insn) == get_rs2(insn) ? get_imm_b(insn) : 4);
+    break;
   }
 
   pc += offset;
