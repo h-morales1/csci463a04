@@ -2,6 +2,7 @@
  */
 
 #include "rv32i_hart.h"
+#include <cstdint>
 
 void rv32i_hart::reset() {
   pc = 0;
@@ -96,6 +97,36 @@ void rv32i_hart::exec(uint32_t insn, std::ostream *pos) {
     case funct3_add:
       exec_addi(insn, pos);
       return;
+    case funct3_slt:
+      exec_slti(insn, pos);
+      return;
+    case funct3_sltu:
+      exec_sltiu(insn, pos);
+      return;
+    case funct3_xor:
+      exec_xori(insn, pos);
+      return;
+    case funct3_or:
+      exec_ori(insn, pos);
+      return;
+    case funct3_and:
+      exec_andi(insn, pos);
+      return;
+    case funct3_sll:
+      exec_slli(insn, pos);
+      return;
+    case funct3_srx:
+      switch (get_funct7(insn)) {
+      default:
+        exec_illegal_insn(insn, pos);
+        return;
+      case funct7_srl:
+        exec_srli(insn, pos);
+        return;
+      case funct7_sra:
+        exec_srai(insn, pos);
+        return;
+      }
     }
   case opcode_load_imm:
     switch (get_funct3(insn)) {
@@ -382,6 +413,171 @@ void rv32i_hart::exec_addi(uint32_t insn, std::ostream *pos) {
          << " + " << to_hex0x32(regs.get(rs1) + imm) << " = "
          << to_hex0x32(regs.get(rs1) + imm) << std::endl;
   }
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_slti(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  int32_t imm = get_imm_i(insn);
+
+  if (pos) {
+    std::string s = render_itype_alu(insn, "slti", imm);
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = "
+         << "(" << to_hex0x32((int32_t)regs.get(rs1)) << " < " << imm << ")"
+         << " ? "
+         << "1"
+         << " : "
+         << "0"
+         << " = " << to_hex0x32(((int32_t)regs.get(rs1) < imm ? 1 : 0))
+         << std::endl;
+  }
+
+  if ((int32_t)regs.get(rs1) < imm) {
+    regs.set(rd, 1);
+  } else {
+    regs.set(rd, 0);
+  }
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_sltiu(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  int32_t imm = get_imm_i(insn);
+
+  if (pos) {
+    std::string s = render_itype_alu(insn, "sltiu", imm);
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = "
+         << "(" << to_hex0x32((uint32_t)regs.get(rs1)) << " <U "
+         << (uint32_t)imm << ")"
+         << " ? "
+         << "1"
+         << " : "
+         << "0"
+         << " = "
+         << to_hex0x32(((uint32_t)regs.get(rs1) < (uint32_t)imm ? 1 : 0))
+         << std::endl;
+  }
+
+  if ((uint32_t)regs.get(rs1) < (uint32_t)imm) {
+    regs.set(rd, 1);
+  } else {
+    regs.set(rd, 0);
+  }
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_xori(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  int32_t imm = get_imm_i(insn);
+
+  if (pos) {
+    std::string s = render_itype_alu(insn, "xori", imm);
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
+         << " ^ " << to_hex0x32(imm) << " = "
+         << to_hex0x32((regs.get(rs1) ^ imm)) << std::endl;
+  }
+
+  regs.set(rd, (regs.get(rs1) ^ imm));
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_ori(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  int32_t imm = get_imm_i(insn);
+
+  if (pos) {
+    std::string s = render_itype_alu(insn, "ori", imm);
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
+         << " | " << to_hex0x32(imm) << " = "
+         << to_hex0x32((regs.get(rs1) | imm)) << std::endl;
+  }
+
+  regs.set(rd, (regs.get(rs1) | imm));
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_andi(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  int32_t imm = get_imm_i(insn);
+
+  if (pos) {
+    std::string s = render_itype_alu(insn, "andi", imm);
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
+         << " & " << to_hex0x32(imm) << " = "
+         << to_hex0x32((regs.get(rs1) & imm)) << std::endl;
+  }
+
+  regs.set(rd, (regs.get(rs1) & imm));
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_slli(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  int32_t imm = get_imm_i(insn);
+
+  if (pos) {
+    std::string s = render_itype_alu(insn, "slli", imm % XLEN);
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
+         << " << " << (imm % XLEN) << " = "
+         << to_hex0x32((regs.get(rs1) << (imm % XLEN))) << std::endl;
+  }
+
+  regs.set(rd, (regs.get(rs1) << (imm % XLEN)));
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_srli(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  int32_t imm = get_imm_i(insn);
+
+  if (pos) {
+    std::string s = render_itype_alu(insn, "srli", imm % XLEN);
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
+         << " >> " << (imm % XLEN) << " = "
+         << to_hex0x32(((uint32_t)regs.get(rs1) >> (uint32_t)(imm % XLEN)))
+         << std::endl;
+  }
+
+  regs.set(rd, ((uint32_t)regs.get(rs1) >> (uint32_t)(imm % XLEN)));
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_srai(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  int32_t imm = get_imm_i(insn);
+
+  if (pos) {
+    std::string s = render_itype_alu(insn, "srai", imm % XLEN);
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
+         << " >> " << (imm % XLEN) << " = "
+         << to_hex0x32((regs.get(rs1) >> (imm % XLEN))) << std::endl;
+  }
+
+  regs.set(rd, (regs.get(rs1) >> (imm % XLEN)));
 
   pc += 4;
 }

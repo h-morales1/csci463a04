@@ -32,6 +32,14 @@ private:
   void exec_jal(uint32_t insn, std::ostream *pos);
   void exec_jalr(uint32_t insn, std::ostream *pos);
   void exec_addi(uint32_t insn, std::ostream *pos);
+  void exec_slti(uint32_t insn, std::ostream *pos);
+  void exec_sltiu(uint32_t insn, std::ostream *pos);
+  void exec_xori(uint32_t insn, std::ostream *pos);
+  void exec_ori(uint32_t insn, std::ostream *pos);
+  void exec_andi(uint32_t insn, std::ostream *pos);
+  void exec_slli(uint32_t insn, std::ostream *pos);
+  void exec_srli(uint32_t insn, std::ostream *pos);
+  void exec_srai(uint32_t insn, std::ostream *pos);
   void exec_lb(uint32_t insn, std::ostream *pos);
   void exec_lbu(uint32_t insn, std::ostream *pos);
   void exec_lh(uint32_t insn, std::ostream *pos);
