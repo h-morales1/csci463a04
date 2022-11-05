@@ -40,6 +40,16 @@ private:
   void exec_slli(uint32_t insn, std::ostream *pos);
   void exec_srli(uint32_t insn, std::ostream *pos);
   void exec_srai(uint32_t insn, std::ostream *pos);
+  void exec_add(uint32_t insn, std::ostream *pos);
+  void exec_sub(uint32_t insn, std::ostream *pos);
+  void exec_sll(uint32_t insn, std::ostream *pos);
+  void exec_slt(uint32_t insn, std::ostream *pos);
+  void exec_sltu(uint32_t insn, std::ostream *pos);
+  void exec_xor(uint32_t insn, std::ostream *pos);
+  void exec_srl(uint32_t insn, std::ostream *pos);
+  void exec_sra(uint32_t insn, std::ostream *pos);
+  void exec_or(uint32_t insn, std::ostream *pos);
+  void exec_and(uint32_t insn, std::ostream *pos);
   void exec_lb(uint32_t insn, std::ostream *pos);
   void exec_lbu(uint32_t insn, std::ostream *pos);
   void exec_lh(uint32_t insn, std::ostream *pos);

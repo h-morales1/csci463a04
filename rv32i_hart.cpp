@@ -164,6 +164,54 @@ void rv32i_hart::exec(uint32_t insn, std::ostream *pos) {
       exec_sw(insn, pos);
       return;
     }
+  case opcode_rtype:
+    switch (get_funct3(insn)) {
+    default:
+      exec_illegal_insn(insn, pos);
+      return;
+    case funct3_sll:
+      exec_sll(insn, pos);
+      return;
+    case funct3_slt:
+      exec_slt(insn, pos);
+      return;
+    case funct3_sltu:
+      exec_sltu(insn, pos);
+      return;
+    case funct3_or:
+      exec_or(insn, pos);
+      return;
+    case funct3_and:
+      exec_and(insn, pos);
+      return;
+    case funct3_xor:
+      exec_xor(insn, pos);
+      return;
+    case funct3_add:
+      switch (get_funct7(insn)) {
+      default:
+        exec_illegal_insn(insn, pos);
+        return;
+      case funct7_add:
+        exec_add(insn, pos);
+        return;
+      case funct7_sub:
+        exec_sub(insn, pos);
+        return;
+      }
+    case funct3_srx:
+      switch (get_funct7(insn)) {
+      default:
+        exec_illegal_insn(insn, pos);
+        return;
+      case funct7_srl:
+        exec_srl(insn, pos);
+        return;
+      case funct7_sra:
+        exec_sra(insn, pos);
+        return;
+      }
+    }
   }
 }
 
@@ -723,6 +771,196 @@ void rv32i_hart::exec_sw(uint32_t insn, std::ostream *pos) {
   }
 
   mem.set32((regs.get(rs1) + imm), (regs.get(rs2) & 0xffffffff));
+  pc += 4;
+}
+
+void rv32i_hart::exec_add(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t rs2 = get_rs2(insn);
+
+  if (pos) {
+    std::string s = render_rtype(insn, "add");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
+         << " + " << to_hex0x32(regs.get(rs2)) << " = "
+         << to_hex0x32(regs.get(rs1) + regs.get(rs2)) << std::endl;
+  }
+
+  regs.set(rd, (regs.get(rs1) + (regs.get(rs2))));
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_sub(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t rs2 = get_rs2(insn);
+
+  if (pos) {
+    std::string s = render_rtype(insn, "sub");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
+         << " - " << to_hex0x32(regs.get(rs2)) << " = "
+         << to_hex0x32(regs.get(rs1) - regs.get(rs2)) << std::endl;
+  }
+
+  regs.set(rd, (regs.get(rs1) - (regs.get(rs2))));
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_sll(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t rs2 = get_rs2(insn);
+
+  if (pos) {
+    std::string s = render_rtype(insn, "sll");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
+         << " << " << (regs.get(rs2) & 0x1f) << " = "
+         << to_hex0x32(regs.get(rs1) << (regs.get(rs2) & 0x1f)) << std::endl;
+  }
+
+  regs.set(rd, (regs.get(rs1) << ((regs.get(rs2) & 0x1f))));
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_slt(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t rs2 = get_rs2(insn);
+
+  int32_t val = (regs.get(rs1) < regs.get(rs2)) ? 1 : 0;
+
+  if (pos) {
+    std::string s = render_rtype(insn, "slt");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = "
+         << "(" << to_hex0x32(regs.get(rs1)) << " < "
+         << to_hex0x32(regs.get(rs2)) << ") ? 1 : 0 = " << to_hex0x32(val)
+         << std::endl;
+  }
+
+  regs.set(rd, val);
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_sltu(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t rs2 = get_rs2(insn);
+
+  int32_t val = ((uint32_t)regs.get(rs1) < (uint32_t)regs.get(rs2)) ? 1 : 0;
+
+  if (pos) {
+    std::string s = render_rtype(insn, "sltu");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = "
+         << "(" << to_hex0x32((uint32_t)regs.get(rs1)) << " <U "
+         << to_hex0x32((uint32_t)regs.get(rs2))
+         << ") ? 1 : 0 = " << to_hex0x32(val) << std::endl;
+  }
+
+  regs.set(rd, val);
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_xor(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t rs2 = get_rs2(insn);
+
+  int32_t val = (regs.get(rs1) ^ regs.get(rs2));
+
+  if (pos) {
+    std::string s = render_rtype(insn, "xor");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
+         << " ^ " << to_hex0x32(regs.get(rs2)) << " = " << to_hex0x32(val)
+         << std::endl;
+  }
+
+  regs.set(rd, val);
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_srl(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t rs2 = get_rs2(insn);
+
+  if (pos) {
+    std::string s = render_rtype(insn, "srl");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
+         << " >> " << (regs.get(rs2) & 0x1f) << " = "
+         << to_hex0x32((uint32_t)regs.get(rs1) >>
+                       ((uint32_t)regs.get(rs2) & 0x1f))
+         << std::endl;
+  }
+
+  regs.set(rd, (uint32_t)(regs.get(rs1) << ((uint32_t)(regs.get(rs2) & 0x1f))));
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_sra(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t rs2 = get_rs2(insn);
+
+  if (pos) {
+    std::string s = render_rtype(insn, "sra");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
+         << " >> " << (regs.get(rs2) & 0x1f) << " = "
+         << to_hex0x32(regs.get(rs1) >> (regs.get(rs2) & 0x1f)) << std::endl;
+  }
+
+  regs.set(rd, (regs.get(rs1) << ((regs.get(rs2) & 0x1f))));
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_or(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t rs2 = get_rs2(insn);
+
+  if (pos) {
+    std::string s = render_rtype(insn, "or");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
+         << " | " << to_hex0x32(regs.get(rs2)) << " = "
+         << to_hex0x32(regs.get(rs1) | (regs.get(rs2))) << std::endl;
+  }
+
+  regs.set(rd, (regs.get(rs1) | ((regs.get(rs2)))));
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_and(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t rs2 = get_rs2(insn);
+
+  if (pos) {
+    std::string s = render_rtype(insn, "and");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
+         << " & " << to_hex0x32(regs.get(rs2)) << " = "
+         << to_hex0x32(regs.get(rs1) & (regs.get(rs2))) << std::endl;
+  }
+
+  regs.set(rd, (regs.get(rs1) & ((regs.get(rs2)))));
+
   pc += 4;
 }
 
