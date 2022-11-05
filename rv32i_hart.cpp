@@ -32,15 +32,21 @@ void rv32i_hart::tick(const std::string &hdr) {
   }
 
   insn_counter++;
-  //  std::cout << "test in tick" << std::endl;
 
   uint32_t insn = mem.get32(pc);
 
   if (show_instructions) {
+    if (hdr.length() != 0) {
+      std::cout << hdr << std::right << std::setw(9) << to_hex32(pc) << ": "
+                << to_hex32(insn) << "  ";
+    } else {
+      // there is no hdr
+      std::cout << std::left << std::setw(8) << to_hex32(pc) << ": "
+                << to_hex32(insn) << "  ";
+    }
     // print hdr, pc register in hex and 32bit instruction in hex
-    std::cout << hdr << std::right << std::setw(9) << to_hex32(pc) << ": "
-              << to_hex32(insn) << "  ";
-    // decode(pc, insn);
+    /*std::cout << hdr << std::right << std::setw(9) << to_hex32(pc) << ": "
+              << to_hex32(insn) << "  ";*/
     exec(insn, &std::cout);
   } else {
     exec(insn, nullptr);
@@ -263,7 +269,6 @@ void rv32i_hart::exec_ebreak(uint32_t insn, std::ostream *pos) {
 void rv32i_hart::exec_lui(uint32_t insn, std::ostream *pos) {
   uint32_t rd = get_rd(insn);
   uint32_t imm = get_imm_u(insn);
-  //
 
   regs.set(rd, imm);
 

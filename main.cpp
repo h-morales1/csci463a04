@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
     case 'i': {
       cpu.set_show_instructions(true);
     } break;
-    case 'l': { // TODO this requires parameters
+    case 'l': {
       std::istringstream iss(optarg);
       iss >> std::hex >> exec_limit;
     } break;
@@ -125,15 +125,13 @@ int main(int argc, char **argv) {
   if (show_disassembly)
     disassemble(mem);
 
-  cpu.run(exec_limit); // TODO make this actually use exec_limit
+  cpu.run(exec_limit);
   if (show_hart_finaldmp) {
 
     cpu.dump("");
     mem.dump();
   }
   cpu.reset();
-
-  //  mem.dump();
 
   return 0;
 }

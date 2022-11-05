@@ -39,11 +39,19 @@ void registerfile::dump(const std::string &hdr) const {
   int count = 7;
   for (size_t i = 0; i < registers.size(); i++) {
     if (count == 7) {
-      std::cout << hdr << " ";
-      std::cout << 'x' << std::left << std::setw(3) << i;
-      print_mem_range(i, i + 8);
-      std::cout << std::endl;
-      count = 0;
+      if (hdr.length() != 0) { // you have a hdr
+        std::cout << hdr << " ";
+        std::cout << 'x' << std::left << std::setw(3) << i;
+        print_mem_range(i, i + 8);
+        std::cout << std::endl;
+        count = 0;
+      } else { // no hdr
+        std::cout << 'x' << std::left << std::setw(3) << i;
+        print_mem_range(i, i + 8);
+        std::cout << std::endl;
+        count = 0;
+      }
+
     } else {
       count++;
     }
