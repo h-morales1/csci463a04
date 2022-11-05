@@ -88,6 +88,15 @@ void rv32i_hart::exec(uint32_t insn, std::ostream *pos) {
   case opcode_jalr:
     exec_jalr(insn, pos);
     return;
+  case opcode_alu_imm:
+    switch (get_funct3(insn)) {
+    default:
+      exec_illegal_insn(insn, pos);
+      return;
+    case funct3_add:
+      exec_addi(insn, pos);
+      return;
+    }
   }
 }
 
@@ -322,6 +331,23 @@ void rv32i_hart::exec_jalr(uint32_t insn, std::ostream *pos) {
   }
 
   pc = (regs.get(rs1) + imm) & 0xfffffffe;
+}
+
+void rv32i_hart::exec_addi(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t imm = get_imm_i(insn);
+  regs.set(rd, (regs.get(rs1) + imm));
+
+  if (pos) {
+    std::string s = render_itype_alu(insn, "addi", imm);
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
+         << " + " << to_hex0x32(regs.get(rs1) + imm) << " = "
+         << to_hex0x32(regs.get(rs1) + imm) << std::endl;
+  }
+
+  pc += 4;
 }
 
 void rv32i_hart::exec_illegal_insn(uint32_t insn, std::ostream *pos) {

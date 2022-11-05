@@ -31,6 +31,7 @@ private:
   void exec_bne(uint32_t insn, std::ostream *pos);
   void exec_jal(uint32_t insn, std::ostream *pos);
   void exec_jalr(uint32_t insn, std::ostream *pos);
+  void exec_addi(uint32_t insn, std::ostream *pos);
   void exec_illegal_insn(uint32_t insn, std::ostream *pos);
 
   bool halt = {false};
