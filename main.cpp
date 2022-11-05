@@ -48,8 +48,15 @@ static void disassemble(const memory &mem) {
  *
  ********************************************************************************/
 static void usage() {
-  cerr << "Usage: rv32i [-m hex-mem-size] infile" << endl;
+  cerr << "Usage: rv32i [-d] [-i] [-r] [-z] [-l exec-limit] [-m hex-mem-size] "
+          "infile"
+       << endl;
+  cerr << "    -d show disassembly before program execution" << endl;
+  cerr << "    -i show instruction printing during execution" << endl;
+  cerr << "    -l maximum number of instructions to exec" << endl;
   cerr << "    -m specify memory size (default = 0x100)" << endl;
+  cerr << "    -r show register printing during execution" << endl;
+  cerr << "    -z show a dump of the regs & memory after simulation" << endl;
   exit(1);
 }
 /**
@@ -74,12 +81,14 @@ static void usage() {
 int main(int argc, char **argv) {
   uint32_t memory_limit = 0x100; // default memory size is 0x100
   bool show_disassembly = false;
+  bool show_hart_finaldmp = false;
+  uint32_t exec_limit = 0;
 
   memory mem(memory_limit);
   cpu_single_hart cpu(mem);
 
   int opt;
-  while ((opt = getopt(argc, argv, "dilrm:")) != -1) {
+  while ((opt = getopt(argc, argv, "dil:rm:z")) != -1) {
     switch (opt) {
     case 'd': {
       show_disassembly = true;
@@ -88,7 +97,8 @@ int main(int argc, char **argv) {
       cpu.set_show_instructions(true);
     } break;
     case 'l': { // TODO this requires parameters
-      std::cout << "exec limit" << std::endl;
+      std::istringstream iss(optarg);
+      iss >> std::hex >> exec_limit;
     } break;
     case 'r': {
       cpu.set_show_registers(true);
@@ -96,6 +106,9 @@ int main(int argc, char **argv) {
     case 'm': {
       std::istringstream iss(optarg);
       iss >> std::hex >> memory_limit;
+    } break;
+    case 'z': {
+      show_hart_finaldmp = true;
     } break;
 
     default:
@@ -112,7 +125,12 @@ int main(int argc, char **argv) {
   if (show_disassembly)
     disassemble(mem);
 
-  cpu.run(0); // TODO make this actually use exec_limit
+  cpu.run(exec_limit); // TODO make this actually use exec_limit
+  if (show_hart_finaldmp) {
+
+    cpu.dump("");
+    mem.dump();
+  }
   cpu.reset();
 
   //  mem.dump();

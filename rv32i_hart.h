@@ -58,6 +58,13 @@ private:
   void exec_sb(uint32_t insn, std::ostream *pos);
   void exec_sh(uint32_t insn, std::ostream *pos);
   void exec_sw(uint32_t insn, std::ostream *pos);
+  void exec_ebreak(uint32_t insn, std::ostream *pos);
+  void exec_csrrw(uint32_t insn, std::ostream *pos);
+  void exec_csrrs(uint32_t insn, std::ostream *pos);
+  void exec_csrrc(uint32_t insn, std::ostream *pos);
+  void exec_csrrwi(uint32_t insn, std::ostream *pos);
+  void exec_csrrsi(uint32_t insn, std::ostream *pos);
+  void exec_csrrci(uint32_t insn, std::ostream *pos);
   void exec_illegal_insn(uint32_t insn, std::ostream *pos);
 
   bool halt = {false};

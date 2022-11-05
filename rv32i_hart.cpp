@@ -32,7 +32,7 @@ void rv32i_hart::tick(const std::string &hdr) {
   }
 
   insn_counter++;
-  // std::cout << "test in tick" << std::endl;
+  //  std::cout << "test in tick" << std::endl;
 
   uint32_t insn = mem.get32(pc);
 
@@ -53,6 +53,39 @@ void rv32i_hart::exec(uint32_t insn, std::ostream *pos) {
   default:
     exec_illegal_insn(insn, pos);
     return;
+  case opcode_system:
+    switch (get_funct3(insn)) {
+    default:
+      exec_illegal_insn(insn, pos);
+      return;
+    case funct3_csrrw:
+      exec_csrrw(insn, pos);
+      return;
+    case funct3_csrrs:
+      exec_csrrs(insn, pos);
+      return;
+    case funct3_csrrc:
+      exec_csrrc(insn, pos);
+      return;
+    case funct3_csrrwi:
+      exec_csrrwi(insn, pos);
+      return;
+    case funct3_csrrsi:
+      exec_csrrsi(insn, pos);
+      return;
+    case funct3_csrrci:
+      exec_csrrci(insn, pos);
+      return;
+    case funct3_add:
+      switch (insn) {
+      default:
+        exec_illegal_insn(insn, pos);
+        return;
+      case insn_ebreak:
+        exec_ebreak(insn, pos);
+        return;
+      }
+    }
   case opcode_lui:
     exec_lui(insn, pos);
     return;
@@ -213,6 +246,18 @@ void rv32i_hart::exec(uint32_t insn, std::ostream *pos) {
       }
     }
   }
+}
+
+void rv32i_hart::exec_ebreak(uint32_t insn, std::ostream *pos) {
+
+  if (pos) {
+    std::string s = render_ebreak(insn);
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// HALT";
+  }
+
+  halt = true;
+  halt_reason = "EBREAK instruction";
 }
 
 void rv32i_hart::exec_lui(uint32_t insn, std::ostream *pos) {
@@ -428,7 +473,7 @@ void rv32i_hart::exec_jal(uint32_t insn, std::ostream *pos) {
 void rv32i_hart::exec_jalr(uint32_t insn, std::ostream *pos) {
   uint32_t rd = get_rd(insn);
   uint32_t rs1 = get_rs1(insn);
-  uint64_t imm = get_imm_i(insn);
+  int32_t imm = get_imm_i(insn);
   regs.set(rd, (pc + 4));
 
   if (pos) {
@@ -960,6 +1005,117 @@ void rv32i_hart::exec_and(uint32_t insn, std::ostream *pos) {
   }
 
   regs.set(rd, (regs.get(rs1) & ((regs.get(rs2)))));
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_csrrw(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t csr = mhartid;
+  regs.set(rd, csr);
+  csr = regs.get(rs1);
+  mhartid = csr;
+
+  if (pos) {
+    std::string s = render_csrrx(insn, "csrrw");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << (int32_t)regs.get(rd)
+         << std::endl;
+  }
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_csrrs(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t csr = mhartid;
+  regs.set(rd, csr);
+  csr = (csr | regs.get(rs1));
+  mhartid = csr;
+
+  if (pos) {
+    std::string s = render_csrrx(insn, "csrrs");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << (int32_t)regs.get(rd)
+         << std::endl;
+  }
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_csrrc(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t csr = mhartid;
+  regs.set(rd, csr);
+  csr = (csr | (~regs.get(rs1)));
+  mhartid = csr;
+
+  if (pos) {
+    std::string s = render_csrrx(insn, "csrrc");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << (int32_t)regs.get(rd)
+         << std::endl;
+  }
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_csrrwi(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t csr = mhartid;
+  int32_t zimm = regs.get(rs1);
+  regs.set(rd, csr);
+  csr = zimm;
+  mhartid = csr;
+
+  if (pos) {
+    std::string s = render_csrrxi(insn, "csrrwi");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << (int32_t)regs.get(rd)
+         << std::endl;
+  }
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_csrrsi(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t csr = mhartid;
+  int32_t zimm = regs.get(rs1);
+  regs.set(rd, csr);
+  csr = zimm;
+  mhartid = csr;
+
+  if (pos) {
+    std::string s = render_csrrxi(insn, "csrrsi");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << (int32_t)regs.get(rd)
+         << std::endl;
+  }
+
+  pc += 4;
+}
+
+void rv32i_hart::exec_csrrci(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t csr = mhartid;
+  int32_t zimm = regs.get(rs1);
+  regs.set(rd, csr);
+  csr = zimm;
+  mhartid = csr;
+
+  if (pos) {
+    std::string s = render_csrrxi(insn, "csrrci");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = " << (int32_t)regs.get(rd)
+         << std::endl;
+  }
 
   pc += 4;
 }
