@@ -32,6 +32,11 @@ private:
   void exec_jal(uint32_t insn, std::ostream *pos);
   void exec_jalr(uint32_t insn, std::ostream *pos);
   void exec_addi(uint32_t insn, std::ostream *pos);
+  void exec_lb(uint32_t insn, std::ostream *pos);
+  void exec_lbu(uint32_t insn, std::ostream *pos);
+  void exec_lh(uint32_t insn, std::ostream *pos);
+  void exec_lhu(uint32_t insn, std::ostream *pos);
+  void exec_lw(uint32_t insn, std::ostream *pos);
   void exec_illegal_insn(uint32_t insn, std::ostream *pos);
 
   bool halt = {false};

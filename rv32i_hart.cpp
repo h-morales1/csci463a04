@@ -97,6 +97,27 @@ void rv32i_hart::exec(uint32_t insn, std::ostream *pos) {
       exec_addi(insn, pos);
       return;
     }
+  case opcode_load_imm:
+    switch (get_funct3(insn)) {
+    default:
+      exec_illegal_insn(insn, pos);
+      return;
+    case funct3_lb:
+      exec_lb(insn, pos);
+      return;
+    case funct3_lbu:
+      exec_lbu(insn, pos);
+      return;
+    case funct3_lh:
+      exec_lh(insn, pos);
+      return;
+    case funct3_lhu:
+      exec_lhu(insn, pos);
+      return;
+    case funct3_lw:
+      exec_lw(insn, pos);
+      return;
+    }
   }
 }
 
@@ -347,6 +368,96 @@ void rv32i_hart::exec_addi(uint32_t insn, std::ostream *pos) {
          << to_hex0x32(regs.get(rs1) + imm) << std::endl;
   }
 
+  pc += 4;
+}
+
+void rv32i_hart::exec_lb(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  int32_t imm = get_imm_i(insn);
+
+  if (pos) {
+    std::string s = render_itype_load(insn, "lb");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = "
+         << "sx(m8(" << to_hex0x32(regs.get(rs1)) << " + " << to_hex0x32(imm)
+         << "))"
+         << " = " << to_hex0x32(mem.get8_sx(regs.get(rs1) + imm)) << std::endl;
+  }
+
+  regs.set(rd, (mem.get8_sx(regs.get(rs1) + imm)));
+  pc += 4;
+}
+
+void rv32i_hart::exec_lbu(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  int32_t imm = get_imm_i(insn);
+
+  if (pos) {
+    std::string s = render_itype_load(insn, "lbu");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = "
+         << "zx(m8(" << to_hex0x32(regs.get(rs1)) << " + " << to_hex0x32(imm)
+         << "))"
+         << " = " << to_hex0x32(mem.get8(regs.get(rs1) + imm)) << std::endl;
+  }
+
+  regs.set(rd, (mem.get8(regs.get(rs1) + imm)));
+  pc += 4;
+}
+
+void rv32i_hart::exec_lh(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  int32_t imm = get_imm_i(insn);
+
+  if (pos) {
+    std::string s = render_itype_load(insn, "lh");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = "
+         << "sx(m16(" << to_hex0x32(regs.get(rs1)) << " + " << to_hex0x32(imm)
+         << "))"
+         << " = " << to_hex0x32(mem.get16_sx(regs.get(rs1) + imm)) << std::endl;
+  }
+
+  regs.set(rd, (mem.get16_sx(regs.get(rs1) + imm)));
+  pc += 4;
+}
+
+void rv32i_hart::exec_lhu(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  int32_t imm = get_imm_i(insn);
+
+  if (pos) {
+    std::string s = render_itype_load(insn, "lhu");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = "
+         << "zx(m16(" << to_hex0x32(regs.get(rs1)) << " + " << to_hex0x32(imm)
+         << "))"
+         << " = " << to_hex0x32(mem.get16(regs.get(rs1) + imm)) << std::endl;
+  }
+
+  regs.set(rd, (mem.get16(regs.get(rs1) + imm)));
+  pc += 4;
+}
+
+void rv32i_hart::exec_lw(uint32_t insn, std::ostream *pos) {
+  uint32_t rd = get_rd(insn);
+  uint32_t rs1 = get_rs1(insn);
+  int32_t imm = get_imm_i(insn);
+
+  if (pos) {
+    std::string s = render_itype_load(insn, "lw");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// " << render_reg(rd) << " = "
+         << "sx(m32(" << to_hex0x32(regs.get(rs1)) << " + " << to_hex0x32(imm)
+         << "))"
+         << " = " << to_hex0x32(mem.get32_sx(regs.get(rs1) + imm)) << std::endl;
+  }
+
+  regs.set(rd, (mem.get32_sx(regs.get(rs1) + imm)));
   pc += 4;
 }
 
