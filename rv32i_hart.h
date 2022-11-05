@@ -37,6 +37,9 @@ private:
   void exec_lh(uint32_t insn, std::ostream *pos);
   void exec_lhu(uint32_t insn, std::ostream *pos);
   void exec_lw(uint32_t insn, std::ostream *pos);
+  void exec_sb(uint32_t insn, std::ostream *pos);
+  void exec_sh(uint32_t insn, std::ostream *pos);
+  void exec_sw(uint32_t insn, std::ostream *pos);
   void exec_illegal_insn(uint32_t insn, std::ostream *pos);
 
   bool halt = {false};

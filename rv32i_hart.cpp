@@ -118,6 +118,21 @@ void rv32i_hart::exec(uint32_t insn, std::ostream *pos) {
       exec_lw(insn, pos);
       return;
     }
+  case opcode_stype:
+    switch (get_funct3(insn)) {
+    default:
+      exec_illegal_insn(insn, pos);
+      return;
+    case funct3_sb:
+      exec_sb(insn, pos);
+      return;
+    case funct3_sh:
+      exec_sh(insn, pos);
+      return;
+    case funct3_sw:
+      exec_sw(insn, pos);
+      return;
+    }
   }
 }
 
@@ -458,6 +473,60 @@ void rv32i_hart::exec_lw(uint32_t insn, std::ostream *pos) {
   }
 
   regs.set(rd, (mem.get32_sx(regs.get(rs1) + imm)));
+  pc += 4;
+}
+
+void rv32i_hart::exec_sb(uint32_t insn, std::ostream *pos) {
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t rs2 = get_rs2(insn);
+  int32_t imm = get_imm_s(insn);
+
+  if (pos) {
+    std::string s = render_stype(insn, "sb");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// "
+         << "m8(" << to_hex0x32(regs.get(rs1)) << " + " << to_hex0x32(imm)
+         << ")"
+         << " = " << to_hex0x32(regs.get(rs2) & 0xff) << std::endl;
+  }
+
+  mem.set8((regs.get(rs1) + imm), (regs.get(rs2) & 0xff));
+  pc += 4;
+}
+
+void rv32i_hart::exec_sh(uint32_t insn, std::ostream *pos) {
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t rs2 = get_rs2(insn);
+  int32_t imm = get_imm_s(insn);
+
+  if (pos) {
+    std::string s = render_stype(insn, "sh");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// "
+         << "m16(" << to_hex0x32(regs.get(rs1)) << " + " << to_hex0x32(imm)
+         << ")"
+         << " = " << to_hex0x32(regs.get(rs2) & 0xffff) << std::endl;
+  }
+
+  mem.set16((regs.get(rs1) + imm), (regs.get(rs2) & 0xffff));
+  pc += 4;
+}
+
+void rv32i_hart::exec_sw(uint32_t insn, std::ostream *pos) {
+  uint32_t rs1 = get_rs1(insn);
+  uint32_t rs2 = get_rs2(insn);
+  int32_t imm = get_imm_s(insn);
+
+  if (pos) {
+    std::string s = render_stype(insn, "sw");
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// "
+         << "m32(" << to_hex0x32(regs.get(rs1)) << " + " << to_hex0x32(imm)
+         << ")"
+         << " = " << to_hex0x32(regs.get(rs2) & 0xffffffff) << std::endl;
+  }
+
+  mem.set32((regs.get(rs1) + imm), (regs.get(rs2) & 0xffffffff));
   pc += 4;
 }
 
