@@ -45,8 +45,7 @@ void rv32i_hart::tick(const std::string &hdr) {
                 << to_hex32(insn) << "  ";
     }
     // print hdr, pc register in hex and 32bit instruction in hex
-    /*std::cout << hdr << std::right << std::setw(9) << to_hex32(pc) << ": "
-              << to_hex32(insn) << "  ";*/
+
     exec(insn, &std::cout);
   } else {
     exec(insn, nullptr);
@@ -272,7 +271,6 @@ void rv32i_hart::exec_ebreak(uint32_t insn, std::ostream *pos) {
 void rv32i_hart::exec_lui(uint32_t insn, std::ostream *pos) {
   uint32_t rd = get_rd(insn);
   int32_t imm = get_imm_u(insn);
-  //(imm_u >> 12) & 0x0fffff)
   regs.set(rd, ((imm >> 12) & 0x0fffff) << 12);
 
   if (pos) {
@@ -498,17 +496,13 @@ void rv32i_hart::exec_jalr(uint32_t insn, std::ostream *pos) {
          << " = " << to_hex0x32(p_result) << std::endl;
   }
 
-  // pc = (regs.get(rs1) + imm) & (0xfffffffe); // TODO the order is messing
-  // things up, math is fine, just order
   pc = p_result;
-  // regs.set(rd, (pc + 4));
 }
 
 void rv32i_hart::exec_addi(uint32_t insn, std::ostream *pos) {
   uint32_t rd = get_rd(insn);
   uint32_t rs1 = get_rs1(insn);
   int32_t imm = get_imm_i(insn);
-  // int32_t rd_val = regs.get(rd);
   int32_t rs1_val = regs.get(rs1);
   regs.set(rd, (regs.get(rs1) + imm));
 
@@ -980,7 +974,6 @@ void rv32i_hart::exec_sra(uint32_t insn, std::ostream *pos) {
          << to_hex0x32(regs.get(rs1) >> (regs.get(rs2) & 0x1f)) << std::endl;
   }
 
-  // regs.set(rd, (regs.get(rs1) << ((regs.get(rs2) & 0x1f))));
   regs.set(rd, (regs.get(rs1) >> (regs.get(rs2) & 0x1f)));
 
   pc += 4;

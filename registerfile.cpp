@@ -26,7 +26,6 @@ int32_t registerfile::get(uint32_t r) const {
 void registerfile::print_mem_range(uint32_t start, uint32_t end) const {
   int counter = 0;
   for (; start < end; start++) {
-    // std::cout << hex::to_hex32(get(start)) << "K" << end << "K";
     if (start == (end - 1)) {
       // its the end of the line
       std::cout << hex::to_hex32(get(start));
@@ -42,7 +41,6 @@ void registerfile::print_mem_range(uint32_t start, uint32_t end) const {
 }
 
 void registerfile::dump(const std::string &hdr) const {
-  // TODO
   int count = 7;
   for (size_t i = 0; i < registers.size(); i++) {
     if (count == 7) {
