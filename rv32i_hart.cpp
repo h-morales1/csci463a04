@@ -98,7 +98,7 @@ void rv32i_hart::exec(uint32_t insn, std::ostream *pos) {
         exec_ebreak(insn, pos);
         return;
       case insn_ecall:
-        exec_ebreak(insn, pos);
+        exec_ecall(insn, pos);
         return;
       }
     }
@@ -274,6 +274,18 @@ void rv32i_hart::exec_ebreak(uint32_t insn, std::ostream *pos) {
 
   halt = true;
   halt_reason = "EBREAK instruction";
+}
+
+void rv32i_hart::exec_ecall(uint32_t insn, std::ostream *pos) {
+
+  if (pos) {
+    std::string s = render_ebreak(insn);
+    *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
+    *pos << "// HALT" << std::endl;
+  }
+
+  halt = true;
+  halt_reason = "ECALL instruction";
 }
 
 void rv32i_hart::exec_lui(uint32_t insn, std::ostream *pos) {
