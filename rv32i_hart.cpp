@@ -1114,7 +1114,7 @@ void rv32i_hart::exec_csrrsi(uint32_t insn, std::ostream *pos) {
   uint32_t csr = mhartid;
   int32_t zimm = regs.get(rs1);
   regs.set(rd, csr);
-  csr = zimm;
+  csr = (mhartid | zimm);
   mhartid = csr;
 
   if (pos) {
@@ -1133,7 +1133,7 @@ void rv32i_hart::exec_csrrci(uint32_t insn, std::ostream *pos) {
   uint32_t csr = mhartid;
   int32_t zimm = regs.get(rs1);
   regs.set(rd, csr);
-  csr = zimm;
+  csr = (mhartid & ~(zimm));
   mhartid = csr;
 
   if (pos) {
