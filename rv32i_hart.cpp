@@ -15,7 +15,7 @@ void rv32i_hart::reset() {
 void rv32i_hart::dump(const std::string &hdr) const {
   regs.dump(hdr);
   std::cout << hdr << std::right << std::setw(3) << "pc"
-            << "  " << to_hex32(pc) << std::endl;
+            << " " << to_hex32(pc) << std::endl;
 }
 
 void rv32i_hart::tick(const std::string &hdr) {
@@ -88,6 +88,9 @@ void rv32i_hart::exec(uint32_t insn, std::ostream *pos) {
         exec_illegal_insn(insn, pos);
         return;
       case insn_ebreak:
+        exec_ebreak(insn, pos);
+        return;
+      case insn_ecall:
         exec_ebreak(insn, pos);
         return;
       }
@@ -259,7 +262,7 @@ void rv32i_hart::exec_ebreak(uint32_t insn, std::ostream *pos) {
   if (pos) {
     std::string s = render_ebreak(insn);
     *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
-    *pos << "// HALT";
+    *pos << "// HALT" << std::endl;
   }
 
   halt = true;
@@ -268,15 +271,15 @@ void rv32i_hart::exec_ebreak(uint32_t insn, std::ostream *pos) {
 
 void rv32i_hart::exec_lui(uint32_t insn, std::ostream *pos) {
   uint32_t rd = get_rd(insn);
-  uint32_t imm = get_imm_u(insn);
-
-  regs.set(rd, imm);
+  int32_t imm = get_imm_u(insn);
+  //(imm_u >> 12) & 0x0fffff)
+  regs.set(rd, ((imm >> 12) & 0x0fffff) << 12);
 
   if (pos) {
     std::string s = render_utype(insn, "lui");
     *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
-    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rd))
-         << std::endl;
+    *pos << "// " << render_reg(rd) << " = "
+         << to_hex0x32((((imm >> 12) & 0x0fffff) << 12)) << std::endl;
   }
 
   pc += 4;
@@ -284,7 +287,7 @@ void rv32i_hart::exec_lui(uint32_t insn, std::ostream *pos) {
 
 void rv32i_hart::exec_auipc(uint32_t insn, std::ostream *pos) {
   uint32_t rd = get_rd(insn);
-  uint32_t imm = get_imm_u(insn);
+  int32_t imm = get_imm_u(insn);
 
   regs.set(rd, (imm + pc));
   if (pos) {
@@ -300,7 +303,7 @@ void rv32i_hart::exec_auipc(uint32_t insn, std::ostream *pos) {
 void rv32i_hart::exec_beq(uint32_t insn, std::ostream *pos) {
   uint32_t rs1 = get_rs1(insn);
   uint32_t rs2 = get_rs2(insn);
-  uint32_t imm = get_imm_b(insn);
+  int32_t imm = get_imm_b(insn);
 
   if (pos) {
     std::string s = render_btype(pc, insn, "beq");
@@ -325,7 +328,7 @@ void rv32i_hart::exec_beq(uint32_t insn, std::ostream *pos) {
 void rv32i_hart::exec_bge(uint32_t insn, std::ostream *pos) {
   uint32_t rs1 = get_rs1(insn);
   uint32_t rs2 = get_rs2(insn);
-  uint32_t imm = get_imm_b(insn);
+  int32_t imm = get_imm_b(insn);
 
   if (pos) {
     std::string s = render_btype(pc, insn, "bge");
@@ -351,7 +354,7 @@ void rv32i_hart::exec_bge(uint32_t insn, std::ostream *pos) {
 void rv32i_hart::exec_bgeu(uint32_t insn, std::ostream *pos) {
   uint32_t rs1 = get_rs1(insn);
   uint32_t rs2 = get_rs2(insn);
-  uint32_t imm = get_imm_b(insn);
+  int32_t imm = get_imm_b(insn);
 
   if (pos) {
     std::string s = render_btype(pc, insn, "bgeu");
@@ -379,7 +382,7 @@ void rv32i_hart::exec_bgeu(uint32_t insn, std::ostream *pos) {
 void rv32i_hart::exec_blt(uint32_t insn, std::ostream *pos) {
   uint32_t rs1 = get_rs1(insn);
   uint32_t rs2 = get_rs2(insn);
-  uint32_t imm = get_imm_b(insn);
+  int32_t imm = get_imm_b(insn);
 
   if (pos) {
     std::string s = render_btype(pc, insn, "blt");
@@ -404,7 +407,7 @@ void rv32i_hart::exec_blt(uint32_t insn, std::ostream *pos) {
 void rv32i_hart::exec_bltu(uint32_t insn, std::ostream *pos) {
   uint32_t rs1 = get_rs1(insn);
   uint32_t rs2 = get_rs2(insn);
-  uint32_t imm = get_imm_b(insn);
+  int32_t imm = get_imm_b(insn);
 
   if (pos) {
     std::string s = render_btype(pc, insn, "bltu");
@@ -433,7 +436,7 @@ void rv32i_hart::exec_bltu(uint32_t insn, std::ostream *pos) {
 void rv32i_hart::exec_bne(uint32_t insn, std::ostream *pos) {
   uint32_t rs1 = get_rs1(insn);
   uint32_t rs2 = get_rs2(insn);
-  uint32_t imm = get_imm_b(insn);
+  int32_t imm = get_imm_b(insn);
 
   if (pos) {
     std::string s = render_btype(pc, insn, "bne");
@@ -459,14 +462,13 @@ void rv32i_hart::exec_bne(uint32_t insn, std::ostream *pos) {
 
 void rv32i_hart::exec_jal(uint32_t insn, std::ostream *pos) {
   uint32_t rd = get_rd(insn);
-  uint32_t imm = get_imm_j(insn);
+  int32_t imm = get_imm_j(insn);
   regs.set(rd, (pc + 4));
 
   if (pos) {
-    std::string s = render_jal((imm), insn);
+    std::string s = render_jal(pc, insn);
     *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
-    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rd))
-         << ",  "
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(pc + 4) << ",  "
          << "pc"
          << " = " << to_hex0x32(pc) << " + " << to_hex0x32(imm) << " = "
          << to_hex0x32(pc + imm) << std::endl;
@@ -479,37 +481,42 @@ void rv32i_hart::exec_jalr(uint32_t insn, std::ostream *pos) {
   uint32_t rd = get_rd(insn);
   uint32_t rs1 = get_rs1(insn);
   int32_t imm = get_imm_i(insn);
+  // regs.set(rd, (pc + 4));
+  int32_t rs1_val = regs.get(rs1);
+  uint32_t p_result = ((regs.get(rs1) + imm) & 0xfffffffe);
   regs.set(rd, (pc + 4));
 
   if (pos) {
     std::string s = render_itype_load(insn, "jalr");
     *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
-    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rd))
-         << ",  "
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(pc + 4) << ",  "
          << "pc"
          << " = "
-         << "(" << to_hex0x32(regs.get(rs1)) << " + " << to_hex0x32(imm) << ")"
+         << "(" << to_hex0x32(imm) << " + " << to_hex0x32(rs1_val) << ")"
          << " & "
          << "0xfffffffe"
-         << " = " << to_hex0x32((regs.get(rs1) + imm) & 0xfffffffe)
-         << std::endl;
+         << " = " << to_hex0x32(p_result) << std::endl;
   }
 
-  pc = (regs.get(rs1) + imm) & 0xfffffffe;
+  // pc = (regs.get(rs1) + imm) & (0xfffffffe); // TODO the order is messing
+  // things up, math is fine, just order
+  pc = p_result;
+  // regs.set(rd, (pc + 4));
 }
 
 void rv32i_hart::exec_addi(uint32_t insn, std::ostream *pos) {
   uint32_t rd = get_rd(insn);
   uint32_t rs1 = get_rs1(insn);
-  uint32_t imm = get_imm_i(insn);
+  int32_t imm = get_imm_i(insn);
+  // int32_t rd_val = regs.get(rd);
+  int32_t rs1_val = regs.get(rs1);
   regs.set(rd, (regs.get(rs1) + imm));
 
   if (pos) {
     std::string s = render_itype_alu(insn, "addi", imm);
     *pos << std::setw(instruction_width) << std::setfill(' ') << std::left << s;
-    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(regs.get(rs1))
-         << " + " << to_hex0x32(regs.get(rs1) + imm) << " = "
-         << to_hex0x32(regs.get(rs1) + imm) << std::endl;
+    *pos << "// " << render_reg(rd) << " = " << to_hex0x32(rs1_val) << " + "
+         << to_hex0x32(imm) << " = " << to_hex0x32(rs1_val + imm) << std::endl;
   }
 
   pc += 4;
@@ -955,7 +962,7 @@ void rv32i_hart::exec_srl(uint32_t insn, std::ostream *pos) {
          << std::endl;
   }
 
-  regs.set(rd, (uint32_t)(regs.get(rs1) << ((uint32_t)(regs.get(rs2) & 0x1f))));
+  regs.set(rd, ((uint32_t)regs.get(rs1) >> ((uint32_t)regs.get(rs2) & 0x1f)));
 
   pc += 4;
 }
@@ -973,7 +980,8 @@ void rv32i_hart::exec_sra(uint32_t insn, std::ostream *pos) {
          << to_hex0x32(regs.get(rs1) >> (regs.get(rs2) & 0x1f)) << std::endl;
   }
 
-  regs.set(rd, (regs.get(rs1) << ((regs.get(rs2) & 0x1f))));
+  // regs.set(rd, (regs.get(rs1) << ((regs.get(rs2) & 0x1f))));
+  regs.set(rd, (regs.get(rs1) >> (regs.get(rs2) & 0x1f)));
 
   pc += 4;
 }

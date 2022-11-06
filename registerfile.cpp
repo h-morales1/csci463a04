@@ -26,7 +26,14 @@ int32_t registerfile::get(uint32_t r) const {
 void registerfile::print_mem_range(uint32_t start, uint32_t end) const {
   int counter = 0;
   for (; start < end; start++) {
-    std::cout << hex::to_hex32(get(start)) << " ";
+    // std::cout << hex::to_hex32(get(start)) << "K" << end << "K";
+    if (start == (end - 1)) {
+      // its the end of the line
+      std::cout << hex::to_hex32(get(start));
+    } else {
+      // its not the end of the line, needs space
+      std::cout << hex::to_hex32(get(start)) << " ";
+    }
     counter++;
     if (counter == 4) {
       std::cout << " ";
@@ -46,7 +53,9 @@ void registerfile::dump(const std::string &hdr) const {
         std::cout << std::endl;
         count = 0;
       } else { // no hdr
-        std::cout << 'x' << std::left << std::setw(3) << i;
+        std::ostringstream ss;
+        ss << "x" << i;
+        std::cout << std::right << std::setw(3) << ss.str() << " ";
         print_mem_range(i, i + 8);
         std::cout << std::endl;
         count = 0;

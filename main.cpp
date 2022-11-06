@@ -81,11 +81,10 @@ static void usage() {
 int main(int argc, char **argv) {
   uint32_t memory_limit = 0x100; // default memory size is 0x100
   bool show_disassembly = false;
+  bool show_insns = false;
+  bool show_regs = false;
   bool show_hart_finaldmp = false;
   uint32_t exec_limit = 0;
-
-  memory mem(memory_limit);
-  cpu_single_hart cpu(mem);
 
   int opt;
   while ((opt = getopt(argc, argv, "dil:rm:z")) != -1) {
@@ -94,14 +93,14 @@ int main(int argc, char **argv) {
       show_disassembly = true;
     } break;
     case 'i': {
-      cpu.set_show_instructions(true);
+      show_insns = true;
     } break;
     case 'l': {
       std::istringstream iss(optarg);
       iss >> std::hex >> exec_limit;
     } break;
     case 'r': {
-      cpu.set_show_registers(true);
+      show_regs = true;
     } break;
     case 'm': {
       std::istringstream iss(optarg);
@@ -115,6 +114,11 @@ int main(int argc, char **argv) {
       usage();
     }
   }
+
+  memory mem(memory_limit);
+  cpu_single_hart cpu(mem);
+  cpu.set_show_instructions(show_insns);
+  cpu.set_show_registers(show_regs);
 
   if (optind >= argc)
     usage(); // missing filename
